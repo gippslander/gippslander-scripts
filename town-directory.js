@@ -1,12 +1,10 @@
-(function() {
+function() {
     const wrapper = document.getElementById('directory-container');
-    if (!wrapper) return;
-
     const targetRegion = wrapper.getAttribute('data-region');
     const root = document.getElementById('town-grid-root');
     const endpoint = "https://api.baseql.com/airtable/graphql/appSZkqeqOYX4mUYb";
     
-    // Querying all to handle filtering in-browser for better reliability
+    // Simple query without API-side filtering to ensure 100% success rate
     const query = `{
       locations {
         town
@@ -22,6 +20,7 @@
     })
     .then(res => res.json())
     .then(result => {
+        // If API fails or data is missing, hide the widget
         if (!result?.data?.locations) {
             wrapper.style.display = 'none';
             return;
@@ -45,7 +44,7 @@
         // Sort A-Z
         filtered.sort((a, b) => a.town.localeCompare(b.town));
 
-        // Generate HTML with accessible SEO support
+        // Generate HTML with SEO support
         root.innerHTML = filtered.map(loc => `
             <a href="${loc.url}" class="town-card" target="_top">
                 ${loc.town}
@@ -54,6 +53,7 @@
         `).join('');
     })
     .catch(() => {
+        // Fail silently so the page looks fine if Airtable is down
         wrapper.style.display = 'none';
     });
 })();
