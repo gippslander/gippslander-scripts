@@ -100,7 +100,7 @@
         const currentSaved = saved.find(s => s.url === window.location.href);
         if (currentSaved && currentSaved.isPinned) {
             pinBtn.classList.add('is-pinned');
-            pinText.innerText = "Search pinned";
+            pinText.innerText = "Search is pinned";
         } else {
             pinBtn.classList.remove('is-pinned');
             pinText.innerText = "Pin this search";
