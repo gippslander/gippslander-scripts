@@ -2,13 +2,15 @@
     const wrapper = document.getElementById('directory-container');
     if (!wrapper) return;
 
-    const region = wrapper.getAttribute('data-region');
+    const targetRegion = wrapper.getAttribute('data-region');
+    const root = document.getElementById('town-grid-root');
     const endpoint = "https://api.baseql.com/airtable/graphql/appSZkqeqOYX4mUYb";
     
-    // GraphQL query with server-side filtering
+    // Querying all to handle filtering in-browser for better reliability
     const query = `{
-      locations(filter: "{region} = '${region}'") {
+      locations {
         town
+        region
         url
       }
     }`;
@@ -20,33 +22,38 @@
     })
     .then(res => res.json())
     .then(result => {
-        const root = document.getElementById('town-grid-root');
-        const data = result?.data?.locations;
-
-        if (!data || data.length === 0) {
+        if (!result?.data?.locations) {
             wrapper.style.display = 'none';
             return;
         }
 
-        // Sort alphabetically
-        data.sort((a, b) => a.town.localeCompare(b.town));
+        const allLocations = result.data.locations;
 
-        const fragment = document.createDocumentFragment();
-        data.forEach(loc => {
-            const a = document.createElement('a');
-            a.href = loc.url;
-            a.className = 'town-card';
-            a.target = '_top';
-            // Hidden text for SEO benefit
-            a.innerHTML = `${loc.town}<span style="font-size:0; color:transparent;"> Jobs</span>`;
-            fragment.appendChild(a);
+        // Filter for the region specified in the data-region attribute
+        const filtered = allLocations.filter(loc => {
+            return loc.region && 
+                   loc.region.includes(targetRegion) && 
+                   loc.town && 
+                   loc.url;
         });
 
-        root.innerHTML = '';
-        root.appendChild(fragment);
+        if (filtered.length === 0) {
+            wrapper.style.display = 'none';
+            return;
+        }
+
+        // Sort A-Z
+        filtered.sort((a, b) => a.town.localeCompare(b.town));
+
+        // Generate HTML with accessible SEO support
+        root.innerHTML = filtered.map(loc => `
+            <a href="${loc.url}" class="town-card" target="_top">
+                ${loc.town}
+                <span class="seo-text">Jobs</span>
+            </a>
+        `).join('');
     })
-    .catch(err => {
-        console.error("Directory Error:", err);
+    .catch(() => {
         wrapper.style.display = 'none';
     });
 })();
