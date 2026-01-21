@@ -1,0 +1,168 @@
+/* ============================================================
+   1. SHARED & GLOBAL STYLES (CENTERED AT 1100px)
+   ============================================================ */
+#g-root, #g-viewport {
+  font-family: inherit; 
+  max-width: 1100px; 
+  margin: 0 auto;
+  color: #1a202c;
+}
+
+/* Base typography for modal and cards */
+.g-modal, #g-root, #g-viewport {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ============================================================
+   2. FULL DIRECTORY LAYOUT (/courses page)
+   ============================================================ */
+.g-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+  gap: 24px; 
+  padding: 20px 0;
+}
+
+.g-card { 
+  background: #fff; 
+  border: 1px solid #e2e8f0; 
+  border-radius: 20px; 
+  cursor: pointer; 
+  transition: transform 0.3s ease, box-shadow 0.3s ease; 
+  display: flex; 
+  flex-direction: column; 
+  overflow: hidden; 
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+}
+
+.g-card:hover { 
+  transform: translateY(-5px); 
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); 
+}
+
+.g-header { 
+  background: #E8F5E9FF; /* Your Mint Green */
+  padding: 20px; 
+  min-height: 120px; 
+  display: flex; 
+  flex-direction: column; 
+  position: relative;
+}
+
+.g-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.g-logo-box { 
+  background: #fff; width: 44px; height: 44px; border-radius: 8px; 
+  padding: 4px; border: 1px solid rgba(0,0,0,0.05); display: flex; 
+  align-items: center; justify-content: center; overflow: hidden; 
+}
+.g-logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+.g-provider-name { font-size: 12px; color: #388e3c; font-weight: 700; text-transform: uppercase; }
+.g-title { font-size: 19px; font-weight: 700; color: #1b5e20; line-height: 1.3; margin: 0; padding-right: 40px; }
+
+/* Course ID positioning */
+.g-course-id { 
+  position: absolute; bottom: 10px; right: 15px;
+  font-weight: 600; color: #1a202c; font-size: 11px; opacity: 0.5; 
+}
+
+.g-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; flex-grow: 1; }
+.g-row { display: flex; align-items: flex-start; gap: 10px; color: #4a5568; font-size: 14px; line-height: 1.4; }
+.g-row svg { color: #4CAF50; flex-shrink: 0; margin-top: 2px; }
+
+/* Truncates long descriptions to keep cards uniform */
+.g-desc-clamp {
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.g-footer { padding: 0 20px 20px; display: flex; justify-content: flex-end; }
+.g-btn-more { 
+  padding: 8px 16px; border-radius: 10px; border: 1px solid #e2e8f0; 
+  background: #fff; font-weight: 600; font-size: 13px; color: #4a5568; 
+}
+
+/* ============================================================
+   3. COMPACT WIDGET LAYOUT (Job Ads)
+   ============================================================ */
+.g-swipe-wrapper {
+  display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+  gap: 16px; padding: 10px 0 24px 0; scrollbar-width: none;
+}
+.g-swipe-wrapper::-webkit-scrollbar { display: none; }
+
+.g-card-compact {
+  flex: 0 0 340px; scroll-snap-align: start; background: #fff;
+  border: 1px solid #e2e8f0; border-radius: 16px; cursor: pointer;
+  display: flex; flex-direction: column; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease; overflow: hidden;
+}
+
+@media (max-width: 480px) { .g-card-compact { flex: 0 0 calc(100% - 60px); } }
+
+.g-compact-header { padding: 20px; background-color: #E8F5E9FF; flex-grow: 1; }
+.g-brand-mini { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.g-logo-sm { width: 32px; height: 32px; border-radius: 6px; background: #fff; border: 1px solid rgba(0,0,0,0.08); object-fit: contain; }
+.g-provider-sm { font-size: 11px; color: #388e3c; font-weight: 700; text-transform: uppercase; }
+.g-title-sm { font-size: 17px; font-weight: 700; color: #1b5e20; margin: 0; line-height: 1.3; }
+.g-compact-footer { padding: 12px 20px; background: #fff; display: flex; gap: 16px; font-size: 12px; color: #475569; border-top: 1px solid rgba(0,0,0,0.03); }
+
+/* ============================================================
+   4. MODAL & THE FIX FOR "ENROL ONLINE" BUTTON
+   ============================================================ */
+#g-modal-overlay { 
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); 
+  backdrop-filter: blur(4px); z-index: 9999; display: none; 
+  align-items: center; justify-content: center; padding: 20px; 
+}
+
+.g-modal { 
+  background: #fff !important; border-radius: 24px; max-width: 480px; width: 100%; 
+  padding: 48px 32px 32px 32px; position: relative; text-align: center; 
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto; 
+}
+
+.g-close-x { 
+  position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; 
+  background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; 
+  justify-content: center; cursor: pointer; color: #64748b; border: none; 
+  font-size: 18px; font-weight: bold; z-index: 100;
+}
+
+.g-modal-img { height: 60px; margin: 0 auto 20px auto; object-fit: contain; display: block; }
+.g-modal-badges { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+.g-badge { background: #f1f5f9; color: #475569; padding: 8px 16px; border-radius: 50px; font-size: 13px; font-weight: 600; }
+
+#m-title { font-size: 26px; font-weight: 800; color: #1e293b; margin-bottom: 15px; line-height: 1.2; }
+#m-desc { color: #4a5568; font-size: 15px; line-height: 1.6; margin-bottom: 30px; text-align: left; }
+
+/* THE FIX: Solid Gippslander Green Button Override */
+#m-link.g-btn-enrol { 
+  background-color: #4CAF50 !important; 
+  color: #ffffff !important; 
+  padding: 16px 24px !important; 
+  border-radius: 12px !important; 
+  text-decoration: none !important; 
+  font-weight: 700 !important; 
+  display: block !important; 
+  font-size: 16px !important; 
+  border: none !important;
+  text-align: center !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  transition: background 0.2s ease !important;
+  box-shadow: 0 4px 6px rgba(76, 175, 80, 0.2);
+}
+
+#m-link.g-btn-enrol:hover { background-color: #43a047 !important; transform: translateY(-1px); }
+
+/* ============================================================
+   5. LOADING SKELETONS
+   ============================================================ */
+@keyframes g-shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
+.g-skeleton { 
+  background: #f6f7f8; background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%); 
+  background-repeat: no-repeat; background-size: 800px 100%; animation: g-shimmer 1.5s infinite linear; border-radius: 4px; 
+}
+.sk-logo { width: 44px; height: 44px; border-radius: 8px; }
+.sk-title { height: 24px; width: 80%; margin-top: 15px; }
+.sk-text { height: 16px; width: 100%; margin-top: 10px; }
