@@ -173,3 +173,4 @@
     } catch (err) { console.error(err); }
   }
   fetchCourses();
+})();
