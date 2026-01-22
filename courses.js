@@ -1,7 +1,14 @@
 (function() {
   const container = document.getElementById('g-container');
   const overlay = document.getElementById('g-modal-overlay');
+  const searchWrapper = document.getElementById('g-search-wrapper');
+  const searchInput = document.getElementById('g-search-input');
+   
+  // Default to compact if attribute missing
   const mode = container.getAttribute('data-mode') || 'compact';
+
+  // Global var to store fetched data for filtering
+  let globalCourses = [];
 
   // --- ICONS ---
   const iconClock = `<svg class="g-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
@@ -28,6 +35,28 @@
   window.closeModal = () => { overlay.style.display = 'none'; document.body.style.overflow = 'auto'; };
   overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
 
+  // --- Search Logic ---
+  if (mode !== 'compact') {
+    searchWrapper.style.display = 'block'; // Show search bar in grid mode
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      const filtered = globalCourses.filter(c => {
+        const title = (c.courseTitle || '').toLowerCase();
+        const prov = (c.provider && c.provider[0] && c.provider[0].name) ? c.provider[0].name.toLowerCase() : '';
+        const tags = Array.isArray(c.tags) ? c.tags.join(' ').toLowerCase() : (c.tags || '').toLowerCase();
+        
+        // --- UPDATED: Search includes Course ID ---
+        const courseId = String(c.courseId || '').toLowerCase();
+        
+        return title.includes(term) || 
+               prov.includes(term) || 
+               tags.includes(term) || 
+               courseId.includes(term);
+      });
+      renderCourses(filtered);
+    });
+  }
+
   function getUrlKeywords() {
     try {
       const path = window.location.pathname.toLowerCase();
@@ -37,6 +66,63 @@
       if (slug === 'test') keywords.push('test');
       return keywords;
     } catch (e) { return []; }
+  }
+
+  // --- Render Function (Decoupled from Fetch) ---
+  function renderCourses(list) {
+    container.innerHTML = '';
+
+    if (list.length === 0) {
+      container.innerHTML = `<div id="g-no-results">No courses found matching your search.</div>`;
+      return;
+    }
+
+    list.forEach(course => {
+      let logoUrl = "https://via.placeholder.com/60?text=Logo";
+      if (course.logo && course.logo[0]) logoUrl = (typeof course.logo[0] === 'string') ? course.logo[0] : (course.logo[0].url || logoUrl);
+      const pName = (course.provider && course.provider[0]) ? course.provider[0].name : "Provider";
+      const normalized = { ...course, finalLogo: logoUrl };
+      const hasId = course.courseId && String(course.courseId).trim().length > 0;
+       
+      const isFeatured = course.featured === true || course.featured === 1 || String(course.featured) === "true";
+      const badgeHtml = isFeatured ? `<div class="g-badge-pop">POPULAR</div>` : '';
+
+      const card = document.createElement('div');
+       
+      if (mode === 'compact') {
+        card.className = 'g-card-compact';
+        card.onclick = () => openModal(normalized);
+        card.innerHTML = `
+          ${badgeHtml}
+          <div class="g-compact-header">
+            <div class="g-brand-mini"><img src="${logoUrl}" class="g-logo-sm"><span class="g-provider-sm">${pName}</span></div>
+            <h3 class="g-title-sm">${course.courseTitle || 'Untitled'}</h3>
+          </div>
+          <div class="g-compact-footer">
+            <div class="g-row-mini">${iconClockSm} <span>${course.duration || 'Flexible'}</span></div>
+            <div class="g-row-mini">${iconLaptopSm} <span>${course.delivery || 'Online'}</span></div>
+          </div>
+        `;
+      } else {
+        card.className = 'g-card';
+        card.onclick = () => openModal(normalized);
+        card.innerHTML = `
+          ${badgeHtml}
+          <div class="g-header">
+            <div class="g-brand"><div class="g-logo-box"><img src="${logoUrl}"></div><span class="g-provider-name">${pName}</span></div>
+            <h3 class="g-title">${course.courseTitle || 'Untitled'}</h3>
+            ${hasId ? `<div class="g-course-id">${course.courseId}</div>` : ''}
+          </div>
+          <div class="g-body">
+            <div class="g-row">${iconClock} <span>${course.duration || 'Flexible'}</span></div>
+            <div class="g-row">${iconLaptop} <span>${course.delivery || 'Online'}</span></div>
+            <div class="g-row"><span class="g-desc-clamp">${course.description || ''}</span></div>
+          </div>
+          <div class="g-footer"><button class="g-btn-more">Learn more</button></div>
+        `;
+      }
+      container.appendChild(card);
+    });
   }
 
   async function fetchCourses() {
@@ -56,7 +142,7 @@
         container.className = 'g-swipe-wrapper'; 
         const urlKeywords = getUrlKeywords();
         
-        // --- UPDATED: Look at ALL active courses, not just featured ---
+        // Compact Logic: Score and Sort, but use ACTIVE (not just featured)
         activeCourses.forEach(c => {
           c._score = 0;
           let searchHaystack = [];
@@ -74,60 +160,16 @@
         displayCourses = [...matches, ...others].slice(0, 3);
         
       } else {
+        // Grid Logic
         container.className = 'g-grid'; 
-        displayCourses = activeCourses.sort((a, b) => (a.courseTitle || "").localeCompare(b.courseTitle || ""));
+        // Save for search filtering
+        globalCourses = activeCourses.sort((a, b) => (a.courseTitle || "").localeCompare(b.courseTitle || ""));
+        displayCourses = globalCourses;
       }
 
-      container.innerHTML = '';
-      displayCourses.forEach(course => {
-        let logoUrl = "https://via.placeholder.com/60?text=Logo";
-        if (course.logo && course.logo[0]) logoUrl = (typeof course.logo[0] === 'string') ? course.logo[0] : (course.logo[0].url || logoUrl);
-        const pName = (course.provider && course.provider[0]) ? course.provider[0].name : "Provider";
-        const normalized = { ...course, finalLogo: logoUrl };
+      // Initial Render
+      renderCourses(displayCourses);
 
-        const hasId = course.courseId && String(course.courseId).trim().length > 0;
-        
-        // --- BADGE LOGIC (Still works for featured items) ---
-        const isFeatured = course.featured === true || course.featured === 1 || String(course.featured) === "true";
-        const badgeHtml = isFeatured ? `<div class="g-badge-pop">POPULAR</div>` : '';
-
-        const card = document.createElement('div');
-        if (mode === 'compact') {
-          card.className = 'g-card-compact';
-          card.onclick = () => openModal(normalized);
-          card.innerHTML = `
-            ${badgeHtml}
-            <div class="g-compact-header">
-              <div class="g-brand-mini"><img src="${logoUrl}" class="g-logo-sm"><span class="g-provider-sm">${pName}</span></div>
-              <h3 class="g-title-sm">${course.courseTitle || 'Untitled'}</h3>
-            </div>
-            <div class="g-compact-footer">
-              <div class="g-row-mini">${iconClockSm} <span>${course.duration || 'Flexible'}</span></div>
-              <div class="g-row-mini">${iconLaptopSm} <span>${course.delivery || 'Online'}</span></div>
-            </div>
-          `;
-        } else {
-          card.className = 'g-card';
-          card.onclick = () => openModal(normalized);
-          
-          card.innerHTML = `
-            ${badgeHtml}
-            <div class="g-header">
-              <div class="g-brand"><div class="g-logo-box"><img src="${logoUrl}"></div><span class="g-provider-name">${pName}</span></div>
-              <h3 class="g-title">${course.courseTitle || 'Untitled'}</h3>
-              ${hasId ? `<div class="g-course-id">${course.courseId}</div>` : ''}
-            </div>
-            <div class="g-body">
-              <div class="g-row">${iconClock} <span>${course.duration || 'Flexible'}</span></div>
-              <div class="g-row">${iconLaptop} <span>${course.delivery || 'Online'}</span></div>
-              <div class="g-row"><span class="g-desc-clamp">${course.description || ''}</span></div>
-            </div>
-            <div class="g-footer"><button class="g-btn-more">Learn more</button></div>
-          `;
-        }
-        container.appendChild(card);
-      });
     } catch (err) { console.error(err); }
   }
   fetchCourses();
-})();
