@@ -1,11 +1,9 @@
 (function() {
   const container = document.getElementById('g-container');
   const overlay = document.getElementById('g-modal-overlay');
-  
-  // Detect mode: 'compact' (Job Ad) vs 'full' (Courses Page)
   const mode = container.getAttribute('data-mode') || 'full';
 
-  // --- Modal Logic (Shared by both) ---
+  // --- Modal Logic ---
   window.openModal = (c) => {
     document.getElementById('m-logo').src = c.finalLogo;
     document.getElementById('m-title').innerText = c.courseTitle;
@@ -22,17 +20,48 @@
 
   // --- Data Fetching & Rendering ---
   async function fetchCourses() {
-    const query = `{ courses { courseId courseTitle delivery description duration logo provider { name } url } }`;
+    // We fetch 'active' as a field but remove the GraphQL filter 
+    // to avoid API syntax errors.
+    const query = `{ 
+      courses { 
+        courseId 
+        courseTitle 
+        delivery 
+        description 
+        duration 
+        logo 
+        active
+        provider { name } 
+        url 
+      } 
+    }`;
+
     try {
       const response = await fetch("https://api.baseql.com/airtable/graphql/appnoS15udCLKToYs", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
       });
+      
       const result = await response.json();
-      let courses = result.data.courses;
+      
+      if (result.errors) {
+        container.innerHTML = `<p style="text-align:center; color:red;">API Error: ${result.errors[0].message}</p>`;
+        return;
+      }
 
-      // Logic Branch 1: Shuffling and Limiting for Compact mode
+      // --- CRITICAL FILTER STEP ---
+      // This filters the data in the browser. 
+      // It will work regardless of whether Airtable sees 'active' as a boolean or a 1/0.
+      let courses = result.data.courses.filter(course => {
+          return course.active === true || course.active === 1 || course.active === "true";
+      });
+
+      if (!courses || courses.length === 0) {
+        container.innerHTML = '<p style="text-align:center;padding:20px;">No courses are currently marked as active.</p>';
+        return;
+      }
+
       if (mode === 'compact') {
         courses = courses.sort(() => 0.5 - Math.random()).slice(0, 3);
       }
@@ -40,7 +69,6 @@
       container.innerHTML = '';
 
       courses.forEach(course => {
-        // Data Normalization
         let logoUrl = "https://via.placeholder.com/60?text=No+Logo";
         if (course.logo && course.logo[0]) {
             logoUrl = (typeof course.logo[0] === 'string') ? course.logo[0] : (course.logo[0].url || logoUrl);
@@ -48,11 +76,9 @@
         const pName = (course.provider && course.provider[0]) ? course.provider[0].name : "Provider";
         const normalized = { ...course, finalLogo: logoUrl };
 
-        // Create the element
         const card = document.createElement('div');
         
         if (mode === 'compact') {
-          // --- COMPACT LAYOUT (Job Ads) ---
           card.className = 'g-card-compact';
           card.onclick = () => openModal(normalized);
           card.innerHTML = `
@@ -69,7 +95,6 @@
             </div>
           `;
         } else {
-          // --- FULL LAYOUT (/courses page) ---
           card.className = 'g-card';
           card.onclick = () => openModal(normalized);
           card.innerHTML = `
