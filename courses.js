@@ -30,13 +30,14 @@
     try {
       const path = window.location.pathname.toLowerCase();
       const slug = path.split('/').pop().replace(/^\d+-/, ''); 
-      const noise = ['and', 'the', 'for', 'with', 'hiring', 'job', 'experienced'];
-      return slug.split('-').filter(word => word.length > 2 && !noise.includes(word));
+      const noise = ['and', 'the', 'for', 'with', 'hiring', 'job', 'experienced', 'test']; 
+      const keywords = slug.split('-').filter(word => word.length > 2 && !noise.includes(word));
+      if (slug === 'test') keywords.push('test');
+      return keywords;
     } catch (e) { return []; }
   }
 
   async function fetchCourses() {
-    // MINIMAL QUERY: Removed filters to prevent API "handshake" errors
     const query = `{ 
       courses { 
         courseId courseTitle delivery description duration logo active featured tags
@@ -53,44 +54,59 @@
       
       const result = await response.json();
       
-      // Check if the API actually returned data
       if (!result.data || !result.data.courses) {
-        console.error("API Response Error:", result);
         container.innerHTML = '<p style="text-align:center;padding:20px;">No course data found.</p>';
         return;
       }
 
       let allCourses = result.data.courses;
 
-      // 1. Safe Filter for "Active"
+      // 1. Filter for Active Status
       let activeCourses = allCourses.filter(c => c && (c.active === true || c.active === 1 || String(c.active) === "true"));
 
       let displayCourses = [];
 
       if (mode === 'compact') {
         const urlKeywords = getUrlKeywords();
-        // Safe Filter for "Featured"
+        // 2. Filter for Featured courses for the widget
         let featured = activeCourses.filter(c => c.featured === true || c.featured === 1 || String(c.featured) === "true");
 
+        // 3. Smart Scoring
         featured.forEach(c => {
           c._score = 0;
-          // Only score if 'tags' actually exists and isn't null
-          if (c.tags && typeof c.tags === 'string') {
-            const courseTags = c.tags.toLowerCase();
-            urlKeywords.forEach(word => {
-              if (courseTags.includes(word)) c._score++;
-            });
+          let searchHaystack = [];
+          
+          if (c.tags) {
+            if (Array.isArray(c.tags)) {
+              searchHaystack.push(...c.tags.map(t => String(t).toLowerCase()));
+            } else {
+              searchHaystack.push(String(c.tags).toLowerCase());
+            }
           }
+          
+          if (c.courseTitle) searchHaystack.push(c.courseTitle.toLowerCase());
+
+          const combinedText = searchHaystack.join(' ');
+          urlKeywords.forEach(word => {
+            const cleanWord = word.toLowerCase().trim();
+            if (combinedText.includes(cleanWord)) {
+              c._score++;
+            }
+          });
         });
 
+        // 4. Sort: Highest score first, then shuffle non-matches
         let matches = featured.filter(c => c._score > 0).sort((a,b) => b._score - a._score);
         let others = featured.filter(c => c._score === 0).sort(() => 0.5 - Math.random());
+        
         displayCourses = [...matches, ...others].slice(0, 3);
+
       } else {
+        // Full mode: Alphabetical sorting
         displayCourses = activeCourses.sort((a, b) => (a.courseTitle || "").localeCompare(b.courseTitle || ""));
       }
 
-      // --- RENDERING ---
+      // --- Rendering Logic ---
       container.innerHTML = '';
       displayCourses.forEach(course => {
         let logoUrl = "https://via.placeholder.com/60?text=Logo";
@@ -104,7 +120,13 @@
         if (mode === 'compact') {
           card.className = 'g-card-compact';
           card.onclick = () => openModal(normalized);
-          card.innerHTML = `<div class="g-compact-header"><div class="g-brand-mini"><img src="${logoUrl}" class="g-logo-sm"><span class="g-provider-sm">${pName}</span></div><h3 class="g-title-sm">${course.courseTitle || 'Untitled'}</h3></div><div class="g-compact-footer"><span>⏱ ${course.duration || 'Flexible'}</span><span>💻 ${course.delivery || 'Online'}</span></div>`;
+          card.innerHTML = `
+            <div class="g-compact-header">
+              <div class="g-brand-mini"><img src="${logoUrl}" class="g-logo-sm"><span class="g-provider-sm">${pName}</span></div>
+              <h3 class="g-title-sm">${course.courseTitle || 'Untitled'}</h3>
+            </div>
+            <div class="g-compact-footer"><span>⏱ ${course.duration || 'Flexible'}</span><span>💻 ${course.delivery || 'Online'}</span></div>
+          `;
         } else {
           card.className = 'g-card';
           card.onclick = () => openModal(normalized);
@@ -115,17 +137,17 @@
               <div class="g-course-id">${course.courseId || ''}</div>
             </div>
             <div class="g-body">
-              <div class="g-row"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg><span>${course.duration || 'Flexible'}</span></div>
-              <div class="g-row"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg><span>${course.delivery || 'Online'}</span></div>
-              <div class="g-row"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span class="g-desc-clamp">${course.description || ''}</span></div>
+              <div class="g-row"><span>⏱ ${course.duration || 'Flexible'}</span></div>
+              <div class="g-row"><span>💻 ${course.delivery || 'Online'}</span></div>
+              <div class="g-row"><span class="g-desc-clamp">${course.description || ''}</span></div>
             </div>
-            <div class="g-footer"><button class="g-btn-more">Learn more</button></div>`;
+            <div class="g-footer"><button class="g-btn-more">Learn more</button></div>
+          `;
         }
         container.appendChild(card);
       });
     } catch (err) { 
-      container.innerHTML = '<p style="text-align:center;padding:20px;">Connection Error. Please check Airtable tags.</p>';
-      console.error(err);
+      container.innerHTML = '<p style="text-align:center;padding:20px;">Unable to load courses.</p>';
     }
   }
   fetchCourses();
