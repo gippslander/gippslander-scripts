@@ -1,3 +1,4 @@
+// v2
 (function() {
   const container = document.getElementById('g-container');
   const overlay = document.getElementById('g-modal-overlay');
@@ -83,12 +84,12 @@
       const pName = (course.provider && course.provider[0]) ? course.provider[0].name : "Provider";
       const normalized = { ...course, finalLogo: logoUrl };
       const hasId = course.courseId && String(course.courseId).trim().length > 0;
-       
+        
       const isFeatured = course.featured === true || course.featured === 1 || String(course.featured) === "true";
       const badgeHtml = isFeatured ? `<div class="g-badge-pop">POPULAR</div>` : '';
 
       const card = document.createElement('div');
-       
+        
       if (mode === 'compact') {
         card.className = 'g-card-compact';
         card.onclick = () => openModal(normalized);
