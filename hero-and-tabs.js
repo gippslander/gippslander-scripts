@@ -29,11 +29,18 @@
 
     function renderDynamicTags() {
         const container = document.getElementById('tags-container'); if (!container) return;
-        const seededRandom = () => { var x = Math.sin(new Date().getDate()) * 10000; return x - Math.floor(x); };
-        const getWeightedRandom = (arr, count) => { const pool = [...arr].filter(item => (typeof item === 'string' ? true : (item.priority && item.priority > 0))); if (pool.length === 0) return []; const selected = []; for (let i = 0; i < count; i++) { let totalWeight = 0; pool.forEach(item => totalWeight += (typeof item === 'string' ? 1 : (item.priority || 1))); let random = seededRandom() * totalWeight; for (let j = 0; j < pool.length; j++) { const item = pool[j]; const weight = (typeof item === 'string') ? 1 : (item.priority || 1); random -= weight; if (random <= 0) { selected.push(item); pool.splice(j, 1); break; } } } return selected; };
+        const date = new Date(); let dailySeed = date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+        const seededRandom = () => { var x = Math.sin(dailySeed++) * 10000; return x - Math.floor(x); };
+        const getWeightedRandom = (arr, count) => { const pool = [...arr].filter(item => (typeof item === 'string' ? true : (item.priority && item.priority > 0))); if (pool.length === 0) return []; const selected = []; for (let i = 0; i < count; i++) { let totalWeight = 0; pool.forEach(item => totalWeight += (typeof item === 'string' ? 1 : (item.priority || 1))); let random = seededRandom() * totalWeight; for (let j = 0; j < pool.length; j++) { const item = pool[j]; const weight = (typeof item === 'string') ? 1 : (item.priority || 1); random -= weight; if (random <= 0) { selected.push(item); pool.splice(j, 1); break; } } if (pool.length === 0) break; } return selected; };
+        
         let tagsHTML = '<span class="tag-label">Trending:</span>';
-        getWeightedRandom(locationsData, 2).forEach(loc => { tagsHTML += `<a href="https://gippslander.com.au/jobs?location=${encodeURIComponent(loc.full_name || loc.label)}&location_id=${loc.location_id || ''}" class="tag">${loc.label}</a>`; });
-        getWeightedRandom(jobsData, 2).forEach(job => { const label = job.label || job; tagsHTML += `<a href="https://gippslander.com.au/jobs?q=${encodeURIComponent(label)}" class="tag">${label}</a>`; });
+        getWeightedRandom(locationsData, 2).forEach(loc => { 
+            tagsHTML += `<a href="https://gippslander.com.au/jobs?location=${encodeURIComponent(loc.full_name || loc.label)}&location_id=${loc.location_id || ''}" class="tag"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>${loc.label}</a>`; 
+        });
+        getWeightedRandom(jobsData, 2).forEach(job => { 
+            const label = job.label || job; 
+            tagsHTML += `<a href="https://gippslander.com.au/jobs?q=${encodeURIComponent(label)}" class="tag"><svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>${label}</a>`; 
+        });
         container.innerHTML = tagsHTML;
     }
 
@@ -42,15 +49,22 @@
         if (recent.length > 0) {
             const hLi = document.createElement("li"); hLi.className = "no-hover"; hLi.innerHTML = `<span style="font-size:0.7rem; color:#9ca3af; text-transform:uppercase; font-weight:700;">Recent searches</span>`;
             list.appendChild(hLi);
-            recent.forEach(item => { const li = document.createElement("li"); li.innerHTML = `🕒 ${item.title}`; li.onclick = () => window.location.href = item.url; list.appendChild(li); });
+            recent.forEach(item => { 
+                const li = document.createElement("li"); 
+                // SVG CLOCK ICON:
+                li.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px; color:#9ca3af; margin-right:8px;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>${item.title}`; 
+                li.onclick = () => window.location.href = item.url; list.appendChild(li); 
+            });
             const div = document.createElement("li"); div.className = "no-hover"; div.style.height = "1px"; div.style.background = "#f3f4f6"; div.style.margin = "5px 0"; list.appendChild(div);
         }
-        const allLi = document.createElement("li"); const allTxt = (type === 'job') ? "All jobs" : "Whole of Gippsland"; allLi.innerHTML = `<strong>${allTxt}</strong>`;
+        const allLi = document.createElement("li"); const allTxt = (type === 'job') ? "All jobs" : "Whole of Gippsland"; 
+        allLi.innerHTML = `<strong style="color:#4CAF50;">${allTxt}</strong>`;
         allLi.onclick = () => { input.value = allTxt; if(type === 'location'){ document.getElementById("hidden-location-id").value = ""; document.getElementById("hidden-full-name").value = ""; } list.classList.remove('active'); };
         list.appendChild(allLi);
         const dataSet = (type === 'job') ? jobsData : locationsData;
         dataSet.filter(x => x.priority >= 7).sort((a,b) => b.priority - a.priority).slice(0, 5).forEach(item => {
-            const li = document.createElement("li"); li.innerHTML = item.label;
+            const li = document.createElement("li"); 
+            li.innerHTML = item.label; 
             li.onclick = () => { input.value = item.label; if(type==='location'){ document.getElementById("hidden-location-id").value = item.location_id || ''; document.getElementById("hidden-full-name").value = item.full_name || item.label; } list.classList.remove('active'); };
             list.appendChild(li);
         });
@@ -61,7 +75,10 @@
         const i = document.getElementById("input-keyword"); const l = document.getElementById("list-keyword"); if(!i) return;
         i.onfocus = i.onclick = () => { if(!i.value.trim()) buildDefaultMenu(l, i, 'job'); };
         i.oninput = () => { const v = i.value.toUpperCase().trim(); l.innerHTML = ''; if(!v){ buildDefaultMenu(l, i, 'job'); return; }
-            let count = 0; jobsData.forEach(item => { const label = item.label || item; if(count < 6 && label.toUpperCase().startsWith(v)){ count++; const li = document.createElement("li"); li.innerHTML = `<strong>${label.substr(0, v.length)}</strong>${label.substr(v.length)}`; li.onclick = () => { i.value = label; l.classList.remove('active'); }; l.appendChild(li); } });
+            let count = 0; jobsData.forEach(item => { const label = item.label || item; if(count < 6 && label.toUpperCase().startsWith(v)){ count++; 
+                const li = document.createElement("li"); 
+                li.innerHTML = `<strong>${label.substr(0, v.length)}</strong>${label.substr(v.length)}`; 
+                li.onclick = () => { i.value = label; l.classList.remove('active'); }; l.appendChild(li); } });
             l.classList.toggle('active', count > 0);
         };
         document.addEventListener('click', e => { if(e.target !== i && e.target !== l) l.classList.remove('active'); });
@@ -71,7 +88,10 @@
         const i = document.getElementById("input-location"); const l = document.getElementById("list-location"); if(!i) return;
         i.onfocus = i.onclick = () => { if(!i.value.trim()) buildDefaultMenu(l, i, 'location'); };
         i.oninput = () => { document.getElementById("hidden-location-id").value = ''; const v = i.value.toUpperCase().trim(); l.innerHTML = ''; if(!v){ buildDefaultMenu(l, i, 'location'); return; }
-            let count = 0; locationsData.forEach(item => { const label = item.label.toUpperCase(); const pc = item.postcode ? item.postcode.toString() : ""; if(count < 8 && (label.startsWith(v) || pc.startsWith(v))){ count++; const li = document.createElement("li"); li.innerHTML = pc.startsWith(v) ? `${item.label} (<strong>${pc}</strong>)` : `<strong>${item.label.substr(0, v.length)}</strong>${item.label.substr(v.length)} ${pc ? '('+pc+')' : ''}`; li.onclick = () => { i.value = item.label; document.getElementById("hidden-location-id").value = item.location_id || ''; document.getElementById("hidden-full-name").value = item.full_name || item.label; l.classList.remove('active'); }; l.appendChild(li); } });
+            let count = 0; locationsData.forEach(item => { const label = item.label.toUpperCase(); const pc = item.postcode ? item.postcode.toString() : ""; if(count < 8 && (label.startsWith(v) || pc.startsWith(v))){ count++; 
+                const li = document.createElement("li"); 
+                li.innerHTML = pc.startsWith(v) ? `${item.label} (<strong>${pc}</strong>)` : `<strong>${item.label.substr(0, v.length)}</strong>${item.label.substr(v.length)} ${pc ? '('+pc+')' : ''}`; 
+                li.onclick = () => { i.value = item.label; document.getElementById("hidden-location-id").value = item.location_id || ''; document.getElementById("hidden-full-name").value = item.full_name || item.label; l.classList.remove('active'); }; l.appendChild(li); } });
             l.classList.toggle('active', count > 0);
         };
         document.addEventListener('click', e => { if(e.target !== i && e.target !== l) l.classList.remove('active'); });
