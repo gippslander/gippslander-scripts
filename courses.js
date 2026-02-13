@@ -127,15 +127,28 @@
   }
 
   async function fetchCourses() {
-    const query = `{ courses { courseId courseTitle delivery description duration logo active featured tags provider { name } url } }`;
     try {
-      const response = await fetch("https://api.baseql.com/airtable/graphql/appnoS15udCLKToYs", {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }),
-      });
-      const result = await response.json();
-      if (!result.data || !result.data.courses) return;
+      // Changed to fetch from the JSON file
+      const response = await fetch("https://cdn.jsdelivr.net/gh/gippslander/assets@main/courses.json");
+      const jsonList = await response.json();
 
-      let allCourses = result.data.courses;
+      if (!Array.isArray(jsonList)) return;
+
+      // Map JSON fields to the internal schema used by the rest of the script
+      let allCourses = jsonList.map(item => ({
+        courseTitle: item.title,
+        duration: item.duration,
+        delivery: item.delivery,
+        description: item.description,
+        url: item.link,
+        logo: [item.logo], // Wrapped in array to match (course.logo && course.logo[0]) logic
+        active: true,      // JSON items are assumed active
+        featured: false,   // Default to false
+        tags: [],
+        provider: [{ name: 'CTA Training' }], // Default provider name based on data context
+        courseId: ''
+      }));
+
       let activeCourses = allCourses.filter(c => c && (c.active === true || c.active === 1 || String(c.active) === "true"));
       let displayCourses = [];
 
@@ -143,7 +156,7 @@
         container.className = 'g-swipe-wrapper'; 
         const urlKeywords = getUrlKeywords();
         
-        // Compact Logic: Score and Sort, but use ACTIVE (not just featured)
+        // Compact Logic: Score and Sort
         activeCourses.forEach(c => {
           c._score = 0;
           let searchHaystack = [];
