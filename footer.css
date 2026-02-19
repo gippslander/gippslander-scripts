@@ -1,0 +1,151 @@
+/* 1. Global Footer Container */
+.gipps-footer-wrap {
+  background: linear-gradient(to bottom, #ffffff, #f4f7f8);
+  color: #2d3436;
+  padding: 80px 0 60px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  border-top: 1px solid #e1e8e9;
+  line-height: 1.5;
+}
+
+.gipps-footer-content {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 50px;
+  align-items: flex-start;
+  padding: 0 20px;
+}
+
+/* 2. Column Layouts */
+.gipps-main-col {
+  flex: 1.5;
+  min-width: 280px;
+  padding-right: 20px;
+  border-right: 1px solid #e1e8e9;
+}
+
+.gipps-link-col {
+  flex: 1;
+  min-width: 150px;
+}
+
+/* 3. Typography & Headers */
+.gipps-footer-wrap h4 {
+  color: #1C4B5D;
+  font-size: 0.85rem;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 25px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gipps-footer-wrap p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+/* 4. Navigation Links & Animations */
+.gipps-footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.gipps-footer-links li {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.gipps-footer-links a {
+  color: #636e72;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.gipps-footer-links a:hover {
+  color: #4CAF50;
+  transform: translateX(6px);
+}
+
+/* 5. "New" Icon Badge for App */
+.app-badge {
+  background-color: #4CAF50;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 2px 5px;
+  border-radius: 4px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* 6. Social Buttons */
+.gipps-social-tray {
+  display: flex;
+  gap: 12px;
+}
+
+.gipps-social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: #ffffff;
+  border-radius: 10px;
+  color: #1C4B5D;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+  transition: all 0.3s ease;
+}
+
+.gipps-social-btn:hover {
+  background: #4CAF50;
+  color: #ffffff;
+  transform: translateY(-4px);
+}
+
+/* 7. Bottom Bar */
+.gipps-footer-bottom {
+  max-width: 1140px;
+  margin: 60px auto 0;
+  padding: 40px 20px 0;
+  border-top: 1px solid #e1e8e9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.built-with-heart {
+  color: #2d3436;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.copyright-text {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+/* 8. Responsive Adjustments */
+@media (max-width: 1024px) {
+  .gipps-main-col { border-right: none; flex: 100%; padding-right: 0; margin-bottom: 50px; }
+}
+
+@media (max-width: 650px) {
+  .gipps-footer-wrap { padding: 60px 0; }
+  .gipps-footer-content { display: grid; grid-template-columns: 1fr 1fr; gap: 30px 10px; }
+  .gipps-main-col { grid-column: span 2; margin-bottom: 20px; }
+  .gipps-footer-bottom { flex-direction: column; gap: 20px; text-align: center; margin-top: 40px; }
+}
