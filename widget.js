@@ -1,5 +1,5 @@
 /* Gippslander Job Widget 
-   v3
+   v3.2
 */
 (function() {
     var config = window.GippslanderConfig || {};
@@ -7,6 +7,11 @@
     var COLOR = config.accentColor || "#4CAF50";
     var SELECTOR = config.containerId || "gippslander-job-board";
     var PROXY_URL = "https://gippsland-jobs-proxy.vercel.app/api/jobs?towns=" + encodeURIComponent(TOWNS);
+
+    // DYNAMIC UTM GENERATION
+    // Grabs the host website's domain so you know exactly who sent the traffic
+    var hostName = window.location.hostname || "unknown_widget_host";
+    var baseUtm = "?utm_source=" + encodeURIComponent(hostName) + "&utm_medium=embedded_widget&utm_campaign=gippslander_widget";
 
     // Job Type ID Mapping
     var JOB_TYPES = {
@@ -115,6 +120,7 @@
     `;
     var skeletons = [1, 2, 3, 4].map(() => skeletonCardHTML).join('');
     
+    // INJECT UTMs into the "Post a Job" and "Powered by" links below
     targetElement.innerHTML = `
         <div id="gp-board">
             <div class="gp-header">
@@ -122,13 +128,13 @@
                     <span class="gp-search-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
                     <input type="text" id="gp-search" class="gp-search-input" placeholder="Search jobs..." aria-label="Search jobs">
                 </div>
-                <a href="https://gippslander.com.au/pricing" target="_blank" class="gp-post-btn">+ Post a Job</a>
+                <a href="https://gippslander.com.au/pricing${baseUtm}" target="_blank" class="gp-post-btn">+ Post a Job</a>
             </div>
             <div id="gp-list-container" class="gp-job-list">${skeletons}</div>
             <div id="gp-load-more-container" style="display: none; text-align: center;"><button id="gp-load-more-btn" class="gp-load-more-btn">Load More Jobs</button></div>
             <div class="gp-footer">
                 <p>Powered by</p>
-                <a href="https://gippslander.com.au" target="_blank">
+                <a href="https://gippslander.com.au${baseUtm}" target="_blank">
                     <img src="https://d3535lqr6sqxto.cloudfront.net/logos/rEkuQybTnVw95OUPNTLLVxtGB7t4BbAVgbRJTndj.png" alt="Gippslander">
                 </a>
             </div>
@@ -154,6 +160,17 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
+    }
+
+    // Helper: Safely add UTM parameters to dynamic URLs that might already have query strings (?)
+    function appendUtmToUrl(urlStr) {
+        if (!urlStr || urlStr === '#') return '#';
+        try {
+            var separator = urlStr.indexOf('?') !== -1 ? '&' : '?';
+            return urlStr + separator + "utm_source=" + encodeURIComponent(hostName) + "&utm_medium=embedded_widget&utm_campaign=gippslander_widget";
+        } catch(e) {
+            return urlStr;
+        }
     }
 
     // Performance: Search Debouncer
@@ -287,7 +304,9 @@
                     <div style="margin-top:20px;">${job.description}</div>
                 `;
                 
-                document.getElementById('gp-modal-apply').href = escapeHTML(job.job_details_url || '#');
+                // INJECT UTMs to the specific Job Details Application link
+                document.getElementById('gp-modal-apply').href = escapeHTML(appendUtmToUrl(job.job_details_url));
+                
                 modal.style.display = 'block';
                 document.body.style.overflow = 'hidden';
                 
