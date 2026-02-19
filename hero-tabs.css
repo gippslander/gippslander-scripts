@@ -1,0 +1,112 @@
+    /* --- DASHBOARD WRAPPER --- */
+    .browse-section { 
+        max-width: 1100px; 
+        margin: 50px auto 40px auto; 
+        padding: 0 20px; 
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+        clear: both;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    /* --- TABS --- */
+    .browse-tabs { display: flex; justify-content: flex-start; flex-wrap: wrap; gap: 20px; margin-bottom: 25px; border-bottom: 1px solid #e5e7eb; }
+    
+    .browse-tab { 
+        padding: 0 5px 12px; font-size: 0.95rem; font-weight: 600; color: #6b7280; cursor: pointer; 
+        background: none; border: none; position: relative; transition: color 0.2s; outline: none; 
+        -webkit-tap-highlight-color: transparent; display: flex; align-items: center; 
+    }
+    .browse-tab:focus { outline: none; }
+    .browse-tab:hover { color: #111827; }
+    .browse-tab.active { color: #4CAF50; }
+    .browse-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: #4CAF50; }
+    .browse-tab.hidden { display: none !important; }
+
+    /* COUNT BADGES */
+    .tab-count { 
+        font-size: 0.75rem; font-weight: 700; background: #f3f4f6; color: #6b7280; 
+        padding: 2px 8px; border-radius: 20px; margin-left: 6px; transition: all 0.2s; 
+    }
+    .browse-tab.active .tab-count { background: #4CAF50; color: white; }
+
+    /* --- NEW / HOT BADGE --- */
+    .badge-new {
+        font-size: 0.65rem;
+        font-weight: 800;
+        background: #ef4444; /* Red color */
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        line-height: 1;
+        display: inline-block;
+    }
+
+    /* CONTENT AREAS */
+    .tab-content { display: none; animation: dashboardFadeIn 0.3s ease; }
+    .tab-content.active { display: grid; }
+    
+    @keyframes dashboardFadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* GRID LAYOUT */
+    .sector-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; width: 100%; }
+    
+    /* CARD STYLES */
+    .sector-card { 
+        display: flex; align-items: center; gap: 15px; text-decoration: none !important; 
+        background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 12px 15px; 
+        transition: all 0.2s ease; min-height: 70px; color: inherit; box-shadow: none; position: relative;
+        cursor: pointer; box-sizing: border-box; width: 100%;
+        overflow: hidden;
+    }
+    .sector-card:hover { border-color: #4CAF50; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+    /* ICONS & LOGOS */
+    .card-icon-bubble { width: 42px; height: 42px; background: #f0fdf4; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #166534; flex-shrink: 0; overflow: hidden; }
+    .card-icon-bubble svg { width: 22px; height: 22px; fill: currentColor; }
+    .card-icon-bubble img { width: 100%; height: 100%; object-fit: contain; }
+
+    /* PINNED STATE STYLE (Yellow/Gold) */
+    .card-icon-bubble.pinned {
+        background: #fffbeb; 
+        color: #f59e0b;      
+    }
+
+    /* TEXT */
+    .sector-info { display: flex; flex-direction: column; justify-content: center; flex: 1; min-width: 0; }
+    
+    .sector-title { 
+        font-size: 0.95rem; font-weight: 700; color: #111827; margin: 0; line-height: 1.3; 
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .sector-meta { font-size: 0.75rem; color: #9ca3af; margin-top: 2px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    /* PIN BUTTON STYLE */
+    .pin-btn {
+        background: none; border: none; padding: 5px; cursor: pointer; color: #d1d5db; transition: color 0.2s;
+        display: flex; align-items: center; justify-content: center; margin-left: auto; z-index: 10;
+        flex-shrink: 0;
+    }
+    .pin-btn:hover { color: #f59e0b; transform: scale(1.1); }
+    .pin-btn.active { color: #f59e0b; }
+    .pin-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+    .manage-card { border: 1px dashed #d1d5db; background: #f9fafb; justify-content: center; color: #4CAF50; font-weight: 600; font-size: 0.9rem; text-align: center; }
+    .empty-message { grid-column: 1 / -1; text-align: center; padding: 30px; color: #6b7280; background: #f9fafb; border-radius: 12px; }
+
+    /* MOBILE SAFETY FIXES */
+    @media (max-width: 850px) {
+        .browse-section { padding: 0 15px; width: 100%; overflow-x: hidden; }
+        .sector-grid { grid-template-columns: 1fr; gap: 10px; width: 100%; }
+        .browse-tab { font-size: 0.8rem; padding: 5px 8px; margin-bottom: 5px; }
+        .browse-tabs { gap: 8px; justify-content: center; margin-bottom: 20px; }
+        .sector-card { max-width: 100%; width: 100%; padding: 12px; }
+    }
