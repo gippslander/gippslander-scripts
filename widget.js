@@ -1,5 +1,5 @@
 /* Gippslander Job Widget 
-   v3.2
+   v3.3 (Max z-index, isolated title, dynamic UTM tracking)
 */
 (function() {
     var config = window.GippslanderConfig || {};
@@ -81,7 +81,7 @@
         .gp-footer img { height: 32px; display: inline-block; }
         
         /* Modal Styles */
-        .gp-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; backdrop-filter: blur(2px); }
+        .gp-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2147483647; backdrop-filter: blur(2px); }
         .gp-modal-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; width: 90%; max-width: 700px; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; }
         .gp-modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: white; z-index: 2; }
         .gp-modal-scroll { padding: 25px; overflow-y: auto; line-height: 1.6; color: #333; flex-grow: 1; }
@@ -142,8 +142,8 @@
         <div id="gp-modal" class="gp-modal-overlay">
             <div class="gp-modal-container">
                 <div class="gp-modal-header">
-                    <h3 id="gp-modal-title" style="margin:0;">Job Details</h3>
-                    <button id="gp-close-btn" class="gp-close-btn" aria-label="Close Modal" style="background:none; border:none; outline:none; font-size:28px; cursor:pointer;">&times;</button>
+                    <div id="gp-modal-title" style="margin:0; font-size: 22px; font-weight: bold; line-height: 1.2; color: #333;">Job Details</div>
+                    <button id="gp-close-btn" class="gp-close-btn" aria-label="Close Modal" style="background:none; border:none; outline:none; font-size:28px; cursor:pointer; color: #333;">&times;</button>
                 </div>
                 <div id="gp-modal-body" class="gp-modal-scroll"></div>
                 <div class="gp-modal-footer"><a href="#" id="gp-modal-apply" target="_blank" class="gp-apply-btn">Apply on Gippslander</a></div>
