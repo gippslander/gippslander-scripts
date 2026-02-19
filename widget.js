@@ -1,5 +1,5 @@
 /* Gippslander Job Widget 
-   v3.4 (Modal appended to Body to escape stacking contexts, dynamic UTM tracking)
+   v3.5 (Fixed HTML entities in modal title, body append, dynamic UTM)
 */
 (function() {
     var config = window.GippslanderConfig || {};
@@ -140,7 +140,7 @@
         </div>
     `;
 
-    // 2. INJECT THE MODAL DIRECTLY INTO THE BODY (Escapes stacking contexts)
+    // 2. INJECT THE MODAL DIRECTLY INTO THE BODY
     if (!document.getElementById('gp-modal')) {
         var modalDiv = document.createElement('div');
         modalDiv.id = 'gp-modal';
@@ -288,7 +288,8 @@
                 var safeLocation = escapeHTML(job.location);
                 var compText = formatComp(job);
 
-                document.getElementById('gp-modal-title').innerText = safeTitle;
+                // FIX: Use innerHTML so the safely escaped HTML entities display correctly
+                document.getElementById('gp-modal-title').innerHTML = safeTitle;
                 
                 document.getElementById('gp-modal-body').innerHTML = `
                     <strong>${safeEmployer}</strong> | ${safeCategory}<br>
