@@ -1,5 +1,5 @@
 /* Gippslander Job Widget 
-   v3.3 (Max z-index, isolated title, dynamic UTM tracking)
+   v3.4 (Modal appended to Body to escape stacking contexts, dynamic UTM tracking)
 */
 (function() {
     var config = window.GippslanderConfig || {};
@@ -9,7 +9,6 @@
     var PROXY_URL = "https://gippsland-jobs-proxy.vercel.app/api/jobs?towns=" + encodeURIComponent(TOWNS);
 
     // DYNAMIC UTM GENERATION
-    // Grabs the host website's domain so you know exactly who sent the traffic
     var hostName = window.location.hostname || "unknown_widget_host";
     var baseUtm = "?utm_source=" + encodeURIComponent(hostName) + "&utm_medium=embedded_widget&utm_campaign=gippslander_widget";
 
@@ -80,7 +79,7 @@
         .gp-footer p { font-size: 14px; color: #333; margin-bottom: 15px; display: block; }
         .gp-footer img { height: 32px; display: inline-block; }
         
-        /* Modal Styles */
+        /* Modal Styles - Z-index maxed out */
         .gp-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2147483647; backdrop-filter: blur(2px); }
         .gp-modal-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; width: 90%; max-width: 700px; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; }
         .gp-modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: white; z-index: 2; }
@@ -120,7 +119,7 @@
     `;
     var skeletons = [1, 2, 3, 4].map(() => skeletonCardHTML).join('');
     
-    // INJECT UTMs into the "Post a Job" and "Powered by" links below
+    // 1. INJECT ONLY THE BOARD INTO THE TARGET DIV
     targetElement.innerHTML = `
         <div id="gp-board">
             <div class="gp-header">
@@ -139,7 +138,14 @@
                 </a>
             </div>
         </div>
-        <div id="gp-modal" class="gp-modal-overlay">
+    `;
+
+    // 2. INJECT THE MODAL DIRECTLY INTO THE BODY (Escapes stacking contexts)
+    if (!document.getElementById('gp-modal')) {
+        var modalDiv = document.createElement('div');
+        modalDiv.id = 'gp-modal';
+        modalDiv.className = 'gp-modal-overlay';
+        modalDiv.innerHTML = `
             <div class="gp-modal-container">
                 <div class="gp-modal-header">
                     <div id="gp-modal-title" style="margin:0; font-size: 22px; font-weight: bold; line-height: 1.2; color: #333;">Job Details</div>
@@ -148,8 +154,9 @@
                 <div id="gp-modal-body" class="gp-modal-scroll"></div>
                 <div class="gp-modal-footer"><a href="#" id="gp-modal-apply" target="_blank" class="gp-apply-btn">Apply on Gippslander</a></div>
             </div>
-        </div>
-    `;
+        `;
+        document.body.appendChild(modalDiv);
+    }
 
     // Security: Basic HTML Escaper for text injected into the DOM
     function escapeHTML(str) {
@@ -162,7 +169,7 @@
             .replace(/'/g, "&#039;");
     }
 
-    // Helper: Safely add UTM parameters to dynamic URLs that might already have query strings (?)
+    // Helper: Safely add UTM parameters to dynamic URLs
     function appendUtmToUrl(urlStr) {
         if (!urlStr || urlStr === '#') return '#';
         try {
@@ -173,7 +180,6 @@
         }
     }
 
-    // Performance: Search Debouncer
     function debounce(func, delay) {
         let timeoutId;
         return function(...args) {
@@ -188,17 +194,14 @@
         return diffDays + "d ago";
     }
 
-    // Compensation Formatting Logic
     function formatComp(j) {
         if (!j.min_compensation && !j.max_compensation) return '';
         var sym = (j.compensation_currency || 'aud').toLowerCase() === 'aud' ? '$' : (j.compensation_currency + ' ').toUpperCase();
         var min = j.min_compensation ? sym + j.min_compensation.toLocaleString() : '';
         var max = j.max_compensation ? sym + j.max_compensation.toLocaleString() : '';
         var range = min && max ? min + ' - ' + max : (min || max);
-        
         var tfMap = { 'annually': '/yr', 'hourly': '/hr', 'monthly': '/mo', 'weekly': '/wk' };
         var tf = tfMap[j.compensation_time_frame] || '';
-        
         return '<span class="gp-meta-comp">' + range + tf + '</span>';
     }
 
@@ -211,7 +214,6 @@
         var list = document.getElementById('gp-list-container');
         var loadMoreContainer = document.getElementById('gp-load-more-container');
         
-        // Better UX: Search Empty State
         if (!jobs.length) { 
             list.innerHTML = `
                 <div style='text-align:center; padding:40px 20px;'>
@@ -225,10 +227,8 @@
         list.innerHTML = jobs.slice(0, displayLimit).map(function(j) {
             var isFeatured = j.featured ? 'is-featured' : '';
             var featTag = j.featured ? '<div class="gp-featured-tag">Featured</div>' : '';
-            
             var badgeText = escapeHTML(JOB_TYPES[j.job_type_id] || j.job_type || 'Full Time');
             var compText = formatComp(j);
-
             var safeTitle = escapeHTML(j.title);
             var safeEmployer = escapeHTML(j.employer?.name || '');
             var safeLocation = escapeHTML(j.location);
@@ -239,7 +239,6 @@
                 <div class="gp-logo-box"><img src="${safeLogo}" class="gp-logo-img" onerror="this.style.display='none'; this.parentElement.innerText='?'"></div>
                 <div class="gp-job-details">
                     <div class="gp-job-title">${safeTitle}</div>
-                    
                     <div class="gp-job-meta">
                         <span class="gp-meta-item">${safeEmployer}</span>
                         <span class="gp-meta-divider">|</span>
@@ -248,7 +247,6 @@
                         <span class="gp-meta-item">${timeAgo(j.posted_at)}</span>
                         ${compText ? `<span class="gp-meta-item">${compText}</span>` : ''}
                     </div>
-
                 </div>
                 <div class="gp-job-badge">${badgeText}</div>
                 <div class="gp-job-arrow">&rarr;</div>
@@ -294,34 +292,28 @@
                 
                 document.getElementById('gp-modal-body').innerHTML = `
                     <strong>${safeEmployer}</strong> | ${safeCategory}<br>
-                    
                     <div class="gp-job-meta" style="margin-bottom:15px;">
                         <span class="gp-meta-item">${safeLocation}</span>
                         ${compText ? `<span class="gp-meta-item">${compText}</span>` : ''}
                     </div>
-                    
                     ${perksHtml}
                     <div style="margin-top:20px;">${job.description}</div>
                 `;
                 
-                // INJECT UTMs to the specific Job Details Application link
                 document.getElementById('gp-modal-apply').href = escapeHTML(appendUtmToUrl(job.job_details_url));
                 
                 modal.style.display = 'block';
                 document.body.style.overflow = 'hidden';
-                
-                // Accessibility: Shift focus to modal so keyboard users know it opened
                 closeBtn.focus();
             }
         }
     });
 
-    // Debounced Search Input 
     document.getElementById('gp-search').addEventListener('input', debounce(function(e) {
         var term = e.target.value.toLowerCase();
         displayLimit = 15;
         render(allJobs.filter(j => j.title.toLowerCase().includes(term) || j.employer?.name?.toLowerCase().includes(term)));
-    }, 250)); // Waits 250ms after typing stops
+    }, 250));
 
     fetch(PROXY_URL).then(res => res.json()).then(data => {
         allJobs = (Array.isArray(data) ? data : []).sort((a, b) => {
