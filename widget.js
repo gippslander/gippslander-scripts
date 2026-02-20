@@ -1,5 +1,5 @@
 /* Gippslander Job Widget 
-   v3.5 (Fixed HTML entities in modal title, body append, dynamic UTM)
+   Hosted via jsDelivr
 */
 (function() {
     var config = window.GippslanderConfig || {};
@@ -7,10 +7,6 @@
     var COLOR = config.accentColor || "#4CAF50";
     var SELECTOR = config.containerId || "gippslander-job-board";
     var PROXY_URL = "https://gippsland-jobs-proxy.vercel.app/api/jobs?towns=" + encodeURIComponent(TOWNS);
-
-    // DYNAMIC UTM GENERATION
-    var hostName = window.location.hostname || "unknown_widget_host";
-    var baseUtm = "?utm_source=" + encodeURIComponent(hostName) + "&utm_medium=embedded_widget&utm_campaign=gippslander_widget";
 
     // Job Type ID Mapping
     var JOB_TYPES = {
@@ -31,43 +27,44 @@
         .gp-post-btn { background-color: ${COLOR}; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; white-space: nowrap; transition: opacity 0.2s; display: inline-block; text-align: center; border: none; cursor: pointer; }
         .gp-post-btn:hover { opacity: 0.9; }
         
-        /* Job List & Cards */
-        .gp-job-list { display: flex; flex-direction: column; gap: 10px; min-height: 200px; }
-        .gp-job-card { display: flex; align-items: center; background: white; border: 1px solid #e1e4e8; border-radius: 12px; padding: 15px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; position: relative; }
-        .gp-job-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: ${COLOR}; }
-        .gp-job-card.is-featured { border-left: 4px solid ${COLOR}; background: #f9fff9; }
+        /* Job List & Cards (Updated Design) */
+        .gp-job-list { display: flex; flex-direction: column; gap: 15px; min-height: 200px; }
+        .gp-job-card { display: flex; align-items: flex-start; gap: 15px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; position: relative; }
+        .gp-job-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.06); border-color: #d1d5db; }
         
-        .gp-featured-tag { position: absolute; top: 0; right: 100px; background: ${COLOR}; color: white; font-size: 10px; padding: 2px 8px; border-radius: 0 0 6px 6px; font-weight: bold; text-transform: uppercase; }
+        /* Featured Styling */
+        .gp-job-card.is-featured { border: 1px solid ${COLOR}; background: #fafffa; }
+        .gp-pin-icon { color: #fbbf24; flex-shrink: 0; }
 
-        .gp-logo-box { width: 50px; height: 50px; border-radius: 8px; overflow: hidden; flex-shrink: 0; margin-right: 15px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; }
-        .gp-logo-img { width: 100%; height: 100%; object-fit: contain; }
-        .gp-job-details { flex-grow: 1; min-width: 0; }
-        .gp-job-title { font-size: 18px; font-weight: 700; color: #333; margin: 0 0 4px 0; }
+        /* Logo & Content Layout */
+        .gp-logo-box { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #fff; display: flex; align-items: center; justify-content: center; border: 1px solid #f3f4f6; padding: 4px; box-sizing: border-box; }
+        .gp-logo-img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
         
-        /* Formatted Metadata Section */
-        .gp-job-meta { font-size: 13px; color: #666; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 6px; }
-        .gp-meta-item { display: flex; align-items: center; white-space: nowrap; }
-        .gp-meta-comp { font-weight: 600; color: #2e7d32; background: #e8f5e9; padding: 3px 8px; border-radius: 6px; }
-        .gp-meta-divider { color: #ddd; }
+        .gp-job-details { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
         
-        /* Unified Job Badge */
-        .gp-job-badge { font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; white-space: nowrap; margin-left: 10px; background-color: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
+        /* Header: Title & Pin */
+        .gp-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .gp-job-title { font-size: 18px; font-weight: 700; color: #111827; margin: 0; line-height: 1.3; }
         
-        .gp-job-arrow { margin-left: 15px; color: #ccc; font-size: 18px; transition: all 0.2s ease; }
-        .gp-job-card:hover .gp-job-arrow { color: ${COLOR}; transform: translateX(5px); }
+        /* Meta row (Company • Type • Location) */
+        .gp-job-meta { font-size: 14px; color: #4b5563; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .gp-meta-divider { color: #9ca3af; }
+        
+        /* Tags (Pills) */
+        .gp-job-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        .gp-job-tag { background-color: #f3f4f6; color: #374151; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 500; }
+        
+        /* Description Snippet */
+        .gp-job-snippet { font-size: 14px; color: #6b7280; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        /* Footer (Easy Apply & Time) */
+        .gp-card-footer { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-top: 4px; }
+        .gp-easy-apply { color: ${COLOR}; display: flex; align-items: center; gap: 6px; font-weight: 500; }
+        .gp-time-ago { color: #6b7280; display: flex; align-items: center; gap: 4px; }
 
-        /* Skeleton Loaders */
-        @keyframes gpShimmer {
-            0% { background-position: -468px 0; }
-            100% { background-position: 468px 0; }
-        }
-        .gp-skeleton {
-            background: #f6f7f8;
-            background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
-            background-repeat: no-repeat;
-            background-size: 800px 100%;
-            animation: gpShimmer 1.5s infinite linear forwards;
-        }
+        /* Skeleton Loaders (Updated to match layout) */
+        @keyframes gpShimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
+        .gp-skeleton { background: #f6f7f8; background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%); background-repeat: no-repeat; background-size: 800px 100%; animation: gpShimmer 1.5s infinite linear forwards; }
 
         /* Load More Section */
         #gp-load-more-container { margin: 30px 0; }
@@ -79,26 +76,23 @@
         .gp-footer p { font-size: 14px; color: #333; margin-bottom: 15px; display: block; }
         .gp-footer img { height: 32px; display: inline-block; }
         
-        /* Modal Styles - Z-index maxed out */
-        .gp-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2147483647; backdrop-filter: blur(2px); }
+        /* Modal Styles */
+        .gp-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; backdrop-filter: blur(2px); }
         .gp-modal-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; width: 90%; max-width: 700px; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; }
         .gp-modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: white; z-index: 2; }
         .gp-modal-scroll { padding: 25px; overflow-y: auto; line-height: 1.6; color: #333; flex-grow: 1; }
-        
-        /* Sticky Modal Footer */
         .gp-modal-footer { padding: 20px; border-top: 1px solid #eee; background: #fafafa; text-align: right; position: sticky; bottom: 0; z-index: 2; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
+        
+        /* Aggressive fix for the close button border */
+        .gp-close-btn { background: transparent !important; border: none !important; outline: none !important; box-shadow: none !important; font-size: 28px; cursor: pointer; padding: 0; line-height: 1; color: #333; }
+        .gp-close-btn:hover { color: #000; }
         
         .gp-apply-btn { background-color: ${COLOR}; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block; transition: opacity 0.2s; }
         .gp-apply-btn:hover { opacity: 0.9; }
-        .gp-perks-container { display: flex; flex-wrap: wrap; gap: 6px; margin: 15px 0; }
-        .gp-perk-tag { background: #e8f5e9; color: #2e7d32; font-size: 12px; padding: 4px 10px; border-radius: 4px; font-weight: 600; }
 
-        /* Responsive Mobile Layout */
         @media (max-width: 600px) { 
-            .gp-job-arrow, .gp-featured-tag { display: none; } 
-            .gp-job-badge { margin-top: 12px; margin-left: 0; align-self: flex-start; }
             .gp-job-card { flex-direction: column; align-items: flex-start; }
-            .gp-logo-box { margin-bottom: 12px; }
+            .gp-logo-box { width: 48px; height: 48px; }
         }
     `;
     document.head.appendChild(style);
@@ -106,20 +100,22 @@
     var targetElement = document.getElementById(SELECTOR);
     if (!targetElement) return;
 
-    // Build the skeleton cards HTML 
+    // Updated Skeleton Cards
     var skeletonCardHTML = `
         <div class="gp-job-card" style="pointer-events: none; border-color: #f3f4f6;">
             <div class="gp-logo-box gp-skeleton" style="border:none;"></div>
             <div class="gp-job-details">
-                <div class="gp-skeleton" style="height: 18px; width: 50%; margin-bottom: 8px; border-radius: 4px;"></div>
-                <div class="gp-skeleton" style="height: 14px; width: 80%; border-radius: 4px;"></div>
+                <div class="gp-skeleton" style="height: 20px; width: 60%; border-radius: 4px;"></div>
+                <div class="gp-skeleton" style="height: 14px; width: 40%; border-radius: 4px;"></div>
+                <div style="display:flex; gap:8px; margin-top:4px;">
+                    <div class="gp-skeleton" style="height: 24px; width: 80px; border-radius: 100px;"></div>
+                    <div class="gp-skeleton" style="height: 24px; width: 100px; border-radius: 100px;"></div>
+                </div>
             </div>
-            <div class="gp-skeleton" style="width: 70px; height: 24px; border-radius: 20px; margin-left: 10px;"></div>
         </div>
     `;
     var skeletons = [1, 2, 3, 4].map(() => skeletonCardHTML).join('');
     
-    // 1. INJECT ONLY THE BOARD INTO THE TARGET DIV
     targetElement.innerHTML = `
         <div id="gp-board">
             <div class="gp-header">
@@ -127,38 +123,30 @@
                     <span class="gp-search-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
                     <input type="text" id="gp-search" class="gp-search-input" placeholder="Search jobs..." aria-label="Search jobs">
                 </div>
-                <a href="https://gippslander.com.au/pricing${baseUtm}" target="_blank" class="gp-post-btn">+ Post a Job</a>
+                <a href="https://gippslander.com.au/pricing" target="_blank" class="gp-post-btn">+ Post a Job</a>
             </div>
             <div id="gp-list-container" class="gp-job-list">${skeletons}</div>
             <div id="gp-load-more-container" style="display: none; text-align: center;"><button id="gp-load-more-btn" class="gp-load-more-btn">Load More Jobs</button></div>
             <div class="gp-footer">
                 <p>Powered by</p>
-                <a href="https://gippslander.com.au${baseUtm}" target="_blank">
+                <a href="https://gippslander.com.au" target="_blank">
                     <img src="https://d3535lqr6sqxto.cloudfront.net/logos/rEkuQybTnVw95OUPNTLLVxtGB7t4BbAVgbRJTndj.png" alt="Gippslander">
                 </a>
             </div>
         </div>
-    `;
-
-    // 2. INJECT THE MODAL DIRECTLY INTO THE BODY
-    if (!document.getElementById('gp-modal')) {
-        var modalDiv = document.createElement('div');
-        modalDiv.id = 'gp-modal';
-        modalDiv.className = 'gp-modal-overlay';
-        modalDiv.innerHTML = `
+        <div id="gp-modal" class="gp-modal-overlay">
             <div class="gp-modal-container">
                 <div class="gp-modal-header">
-                    <div id="gp-modal-title" style="margin:0; font-size: 22px; font-weight: bold; line-height: 1.2; color: #333;">Job Details</div>
-                    <button id="gp-close-btn" class="gp-close-btn" aria-label="Close Modal" style="background:none; border:none; outline:none; font-size:28px; cursor:pointer; color: #333;">&times;</button>
+                    <h3 id="gp-modal-title" style="margin:0; font-size:20px;">Job Details</h3>
+                    <button id="gp-close-btn" class="gp-close-btn" aria-label="Close Modal">&times;</button>
                 </div>
                 <div id="gp-modal-body" class="gp-modal-scroll"></div>
                 <div class="gp-modal-footer"><a href="#" id="gp-modal-apply" target="_blank" class="gp-apply-btn">Apply on Gippslander</a></div>
             </div>
-        `;
-        document.body.appendChild(modalDiv);
-    }
+        </div>
+    `;
 
-    // Security: Basic HTML Escaper for text injected into the DOM
+    // Security: Escaping user strings
     function escapeHTML(str) {
         if (!str) return '';
         return str.toString()
@@ -169,17 +157,13 @@
             .replace(/'/g, "&#039;");
     }
 
-    // Helper: Safely add UTM parameters to dynamic URLs
-    function appendUtmToUrl(urlStr) {
-        if (!urlStr || urlStr === '#') return '#';
-        try {
-            var separator = urlStr.indexOf('?') !== -1 ? '&' : '?';
-            return urlStr + separator + "utm_source=" + encodeURIComponent(hostName) + "&utm_medium=embedded_widget&utm_campaign=gippslander_widget";
-        } catch(e) {
-            return urlStr;
-        }
+    // Strips HTML from description for the preview snippet
+    function stripHTML(html) {
+        if (!html) return '';
+        return html.replace(/<[^>]*>?/gm, ''); // Removes all HTML tags
     }
 
+    // Performance: Search Debouncer
     function debounce(func, delay) {
         let timeoutId;
         return function(...args) {
@@ -192,17 +176,6 @@
         var diffDays = Math.floor((new Date() - new Date(dateString)) / (1000 * 60 * 60 * 24));
         if (diffDays <= 0) return "Today";
         return diffDays + "d ago";
-    }
-
-    function formatComp(j) {
-        if (!j.min_compensation && !j.max_compensation) return '';
-        var sym = (j.compensation_currency || 'aud').toLowerCase() === 'aud' ? '$' : (j.compensation_currency + ' ').toUpperCase();
-        var min = j.min_compensation ? sym + j.min_compensation.toLocaleString() : '';
-        var max = j.max_compensation ? sym + j.max_compensation.toLocaleString() : '';
-        var range = min && max ? min + ' - ' + max : (min || max);
-        var tfMap = { 'annually': '/yr', 'hourly': '/hr', 'monthly': '/mo', 'weekly': '/wk' };
-        var tf = tfMap[j.compensation_time_frame] || '';
-        return '<span class="gp-meta-comp">' + range + tf + '</span>';
     }
 
     var allJobs = [];
@@ -226,30 +199,59 @@
 
         list.innerHTML = jobs.slice(0, displayLimit).map(function(j) {
             var isFeatured = j.featured ? 'is-featured' : '';
-            var featTag = j.featured ? '<div class="gp-featured-tag">Featured</div>' : '';
+            var pinIcon = j.featured ? `<svg class="gp-pin-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>` : '';
+            
             var badgeText = escapeHTML(JOB_TYPES[j.job_type_id] || j.job_type || 'Full Time');
-            var compText = formatComp(j);
             var safeTitle = escapeHTML(j.title);
             var safeEmployer = escapeHTML(j.employer?.name || '');
             var safeLocation = escapeHTML(j.location);
             var safeLogo = escapeHTML(j.employer?.logo || '');
+            var safeCategory = escapeHTML(j.category?.name || '');
+            
+            // Build Snippet text (truncate at 140 chars)
+            var snippetText = stripHTML(j.description);
+            if(snippetText.length > 140) snippetText = snippetText.substring(0, 140) + '...';
+
+            // Build Tags (Category + up to 2 perks)
+            var tagsHtml = '';
+            if (safeCategory) tagsHtml += `<span class="gp-job-tag">${safeCategory}</span>`;
+            
+            var perks = j.custom_fields?.["146383"]?.selected_options || [];
+            perks.slice(0, 2).forEach(p => { tagsHtml += `<span class="gp-job-tag">${escapeHTML(p.option)}</span>`; });
+            var tagsContainer = tagsHtml ? `<div class="gp-job-tags">${tagsHtml}</div>` : '';
 
             return `<div class="gp-job-card ${isFeatured}" data-id="${j.id}">
-                ${featTag}
                 <div class="gp-logo-box"><img src="${safeLogo}" class="gp-logo-img" onerror="this.style.display='none'; this.parentElement.innerText='?'"></div>
+                
                 <div class="gp-job-details">
-                    <div class="gp-job-title">${safeTitle}</div>
+                    <div class="gp-card-header">
+                        <h4 class="gp-job-title">${safeTitle}</h4>
+                        ${pinIcon}
+                    </div>
+                    
                     <div class="gp-job-meta">
-                        <span class="gp-meta-item">${safeEmployer}</span>
-                        <span class="gp-meta-divider">|</span>
-                        <span class="gp-meta-item">${safeLocation}</span>
-                        <span class="gp-meta-divider">|</span>
-                        <span class="gp-meta-item">${timeAgo(j.posted_at)}</span>
-                        ${compText ? `<span class="gp-meta-item">${compText}</span>` : ''}
+                        <span>${safeEmployer}</span>
+                        <span class="gp-meta-divider">•</span>
+                        <span>${badgeText}</span>
+                        <span class="gp-meta-divider">•</span>
+                        <span>${safeLocation}</span>
+                    </div>
+                    
+                    ${tagsContainer}
+                    
+                    <div class="gp-job-snippet">${snippetText}</div>
+                    
+                    <div class="gp-card-footer">
+                        <span class="gp-easy-apply">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> 
+                            Apply Now
+                        </span>
+                        <span class="gp-time-ago">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            ${timeAgo(j.posted_at)}
+                        </span>
                     </div>
                 </div>
-                <div class="gp-job-badge">${badgeText}</div>
-                <div class="gp-job-arrow">&rarr;</div>
             </div>`;
         }).join('');
         
@@ -279,37 +281,47 @@
         if (card) {
             var job = allJobs.find(function(j) { return j.id == card.dataset.id; });
             if (job) {
-                var perks = job.custom_fields?.["146383"]?.selected_options || [];
-                var perksHtml = perks.length ? `<div class="gp-perks-container">${perks.map(p => `<span class="gp-perk-tag">${escapeHTML(p.option)}</span>`).join('')}</div>` : '';
-                
                 var safeTitle = escapeHTML(job.title);
                 var safeEmployer = escapeHTML(job.employer?.name || '');
                 var safeCategory = escapeHTML(job.category?.name || '');
                 var safeLocation = escapeHTML(job.location);
-                var compText = formatComp(job);
+                var badgeText = escapeHTML(JOB_TYPES[job.job_type_id] || job.job_type || 'Full Time');
 
-                // FIX: Use innerHTML so the safely escaped HTML entities display correctly
-                document.getElementById('gp-modal-title').innerHTML = safeTitle;
+                // Re-fetch tags just for the modal
+                var perks = job.custom_fields?.["146383"]?.selected_options || [];
+                var tagsHtml = '';
+                if (safeCategory) tagsHtml += `<span class="gp-job-tag">${safeCategory}</span>`;
+                perks.forEach(p => { tagsHtml += `<span class="gp-job-tag">${escapeHTML(p.option)}</span>`; });
+                var tagsContainer = tagsHtml ? `<div class="gp-job-tags" style="margin-top:15px; margin-bottom:15px;">${tagsHtml}</div>` : '';
+
+                document.getElementById('gp-modal-title').innerText = safeTitle;
                 
                 document.getElementById('gp-modal-body').innerHTML = `
-                    <strong>${safeEmployer}</strong> | ${safeCategory}<br>
-                    <div class="gp-job-meta" style="margin-bottom:15px;">
-                        <span class="gp-meta-item">${safeLocation}</span>
-                        ${compText ? `<span class="gp-meta-item">${compText}</span>` : ''}
+                    <div style="font-size:15px; color:#4b5563; margin-bottom: 5px;">
+                        <strong>${safeEmployer}</strong>
                     </div>
-                    ${perksHtml}
-                    <div style="margin-top:20px;">${job.description}</div>
+                    <div class="gp-job-meta" style="margin-bottom:15px;">
+                        <span>${badgeText}</span>
+                        <span class="gp-meta-divider">•</span>
+                        <span>${safeLocation}</span>
+                    </div>
+                    
+                    ${tagsContainer}
+                    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+                    <div style="margin-top:20px; color:#111827;">${job.description}</div>
                 `;
                 
-                document.getElementById('gp-modal-apply').href = escapeHTML(appendUtmToUrl(job.job_details_url));
-                
+                document.getElementById('gp-modal-apply').href = escapeHTML(job.job_details_url || '#');
                 modal.style.display = 'block';
                 document.body.style.overflow = 'hidden';
+                
+                // Accessibility: Shift focus
                 closeBtn.focus();
             }
         }
     });
 
+    // Debounced Search Input 
     document.getElementById('gp-search').addEventListener('input', debounce(function(e) {
         var term = e.target.value.toLowerCase();
         displayLimit = 15;
