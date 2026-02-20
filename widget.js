@@ -1,5 +1,5 @@
 /* Gippslander Job Widget 
-   v 2.0.0
+   v3.4 - Premium UI + Body Appended Modal + UTM + Entity Fix
 */
 (function() {
     var config = window.GippslanderConfig || {};
@@ -7,6 +7,10 @@
     var COLOR = config.accentColor || "#4CAF50";
     var SELECTOR = config.containerId || "gippslander-job-board";
     var PROXY_URL = "https://gippsland-jobs-proxy.vercel.app/api/jobs?towns=" + encodeURIComponent(TOWNS);
+
+    // DYNAMIC UTM GENERATION
+    var hostName = window.location.hostname || "unknown_widget_host";
+    var baseUtm = "?utm_source=" + encodeURIComponent(hostName) + "&utm_medium=embedded_widget&utm_campaign=gippslander_widget";
 
     // Job Type ID Mapping
     var JOB_TYPES = {
@@ -27,7 +31,7 @@
         .gp-post-btn { background-color: ${COLOR}; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; white-space: nowrap; transition: opacity 0.2s; display: inline-block; text-align: center; border: none; cursor: pointer; }
         .gp-post-btn:hover { opacity: 0.9; }
         
-        /* Job List & Cards (Updated Design) */
+        /* Job List & Cards (Premium Design) */
         .gp-job-list { display: flex; flex-direction: column; gap: 15px; min-height: 200px; }
         .gp-job-card { display: flex; align-items: flex-start; gap: 15px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; position: relative; }
         .gp-job-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.06); border-color: #d1d5db; }
@@ -49,6 +53,7 @@
         /* Meta row (Company • Type • Location) */
         .gp-job-meta { font-size: 14px; color: #4b5563; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
         .gp-meta-divider { color: #9ca3af; }
+        .gp-meta-comp { font-weight: 600; color: #2e7d32; background: #e8f5e9; padding: 3px 8px; border-radius: 6px; }
         
         /* Tags (Pills) */
         .gp-job-tags { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -62,7 +67,7 @@
         .gp-easy-apply { color: ${COLOR}; display: flex; align-items: center; gap: 6px; font-weight: 500; }
         .gp-time-ago { color: #6b7280; display: flex; align-items: center; gap: 4px; }
 
-        /* Skeleton Loaders (Updated to match layout) */
+        /* Skeleton Loaders */
         @keyframes gpShimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
         .gp-skeleton { background: #f6f7f8; background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%); background-repeat: no-repeat; background-size: 800px 100%; animation: gpShimmer 1.5s infinite linear forwards; }
 
@@ -76,14 +81,16 @@
         .gp-footer p { font-size: 14px; color: #333; margin-bottom: 15px; display: block; }
         .gp-footer img { height: 32px; display: inline-block; }
         
-        /* Modal Styles */
-        .gp-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2147483647 !important; backdrop-filter: blur(2px); }
+        /* Modal Styles - Z-index maxed out */
+        .gp-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2147483647 !important; backdrop-filter: blur(2px); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         .gp-modal-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; width: 90%; max-width: 700px; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; }
-        .gp-modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: white; z-index: 2; }
+        .gp-modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: flex-start; background: white; z-index: 2; }
         .gp-modal-scroll { padding: 25px; overflow-y: auto; line-height: 1.6; color: #333; flex-grow: 1; }
+        
+        /* Sticky Modal Footer */
         .gp-modal-footer { padding: 20px; border-top: 1px solid #eee; background: #fafafa; text-align: right; position: sticky; bottom: 0; z-index: 2; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
         
-        /* Aggressive fix for the close button border */
+        /* Close button fix */
         .gp-close-btn { background: transparent !important; border: none !important; outline: none !important; box-shadow: none !important; font-size: 28px; cursor: pointer; padding: 0; line-height: 1; color: #333; }
         .gp-close-btn:hover { color: #000; }
         
@@ -100,7 +107,7 @@
     var targetElement = document.getElementById(SELECTOR);
     if (!targetElement) return;
 
-    // Updated Skeleton Cards
+    // Build the skeleton cards HTML 
     var skeletonCardHTML = `
         <div class="gp-job-card" style="pointer-events: none; border-color: #f3f4f6;">
             <div class="gp-logo-box gp-skeleton" style="border:none;"></div>
@@ -116,6 +123,7 @@
     `;
     var skeletons = [1, 2, 3, 4].map(() => skeletonCardHTML).join('');
     
+    // 1. INJECT ONLY THE BOARD INTO THE TARGET DIV
     targetElement.innerHTML = `
         <div id="gp-board">
             <div class="gp-header">
@@ -123,30 +131,45 @@
                     <span class="gp-search-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
                     <input type="text" id="gp-search" class="gp-search-input" placeholder="Search jobs..." aria-label="Search jobs">
                 </div>
-                <a href="https://gippslander.com.au/pricing" target="_blank" class="gp-post-btn">+ Post a Job</a>
+                <a href="https://gippslander.com.au/pricing${baseUtm}" target="_blank" class="gp-post-btn">+ Post a Job</a>
             </div>
             <div id="gp-list-container" class="gp-job-list">${skeletons}</div>
             <div id="gp-load-more-container" style="display: none; text-align: center;"><button id="gp-load-more-btn" class="gp-load-more-btn">Load More Jobs</button></div>
             <div class="gp-footer">
                 <p>Powered by</p>
-                <a href="https://gippslander.com.au" target="_blank">
+                <a href="https://gippslander.com.au${baseUtm}" target="_blank">
                     <img src="https://d3535lqr6sqxto.cloudfront.net/logos/rEkuQybTnVw95OUPNTLLVxtGB7t4BbAVgbRJTndj.png" alt="Gippslander">
                 </a>
             </div>
         </div>
-        <div id="gp-modal" class="gp-modal-overlay">
+    `;
+
+    // 2. INJECT THE MODAL DIRECTLY INTO THE BODY
+    if (!document.getElementById('gp-modal')) {
+        var modalDiv = document.createElement('div');
+        modalDiv.id = 'gp-modal';
+        modalDiv.className = 'gp-modal-overlay';
+        modalDiv.innerHTML = `
             <div class="gp-modal-container">
                 <div class="gp-modal-header">
-                    <h3 id="gp-modal-title" style="margin:0; font-size:20px;">Job Details</h3>
+                    <h3 id="gp-modal-title" style="margin:0; font-size: 18px; font-weight: 600; line-height: 1.3; color: #111827; padding-right: 15px;">Job Details</h3>
                     <button id="gp-close-btn" class="gp-close-btn" aria-label="Close Modal">&times;</button>
                 </div>
                 <div id="gp-modal-body" class="gp-modal-scroll"></div>
                 <div class="gp-modal-footer"><a href="#" id="gp-modal-apply" target="_blank" class="gp-apply-btn">Apply on Gippslander</a></div>
             </div>
-        </div>
-    `;
+        `;
+        document.body.appendChild(modalDiv);
+    }
 
-    // Security: Escaping user strings
+    // Security & Formatting Helpers
+    function decodeHTMLEntities(text) {
+        if (!text) return '';
+        var textArea = document.createElement('textarea');
+        textArea.innerHTML = text;
+        return textArea.value;
+    }
+
     function escapeHTML(str) {
         if (!str) return '';
         return str.toString()
@@ -157,13 +180,21 @@
             .replace(/'/g, "&#039;");
     }
 
-    // Strips HTML from description for the preview snippet
     function stripHTML(html) {
         if (!html) return '';
-        return html.replace(/<[^>]*>?/gm, ''); // Removes all HTML tags
+        return html.replace(/<[^>]*>?/gm, ''); 
     }
 
-    // Performance: Search Debouncer
+    function appendUtmToUrl(urlStr) {
+        if (!urlStr || urlStr === '#') return '#';
+        try {
+            var separator = urlStr.indexOf('?') !== -1 ? '&' : '?';
+            return urlStr + separator + "utm_source=" + encodeURIComponent(hostName) + "&utm_medium=embedded_widget&utm_campaign=gippslander_widget";
+        } catch(e) {
+            return urlStr;
+        }
+    }
+
     function debounce(func, delay) {
         let timeoutId;
         return function(...args) {
@@ -176,6 +207,17 @@
         var diffDays = Math.floor((new Date() - new Date(dateString)) / (1000 * 60 * 60 * 24));
         if (diffDays <= 0) return "Today";
         return diffDays + "d ago";
+    }
+
+    function formatComp(j) {
+        if (!j.min_compensation && !j.max_compensation) return '';
+        var sym = (j.compensation_currency || 'aud').toLowerCase() === 'aud' ? '$' : (j.compensation_currency + ' ').toUpperCase();
+        var min = j.min_compensation ? sym + j.min_compensation.toLocaleString() : '';
+        var max = j.max_compensation ? sym + j.max_compensation.toLocaleString() : '';
+        var range = min && max ? min + ' - ' + max : (min || max);
+        var tfMap = { 'annually': '/yr', 'hourly': '/hr', 'monthly': '/mo', 'weekly': '/wk' };
+        var tf = tfMap[j.compensation_time_frame] || '';
+        return '<span class="gp-meta-comp">' + range + tf + '</span>';
     }
 
     var allJobs = [];
@@ -201,23 +243,27 @@
             var isFeatured = j.featured ? 'is-featured' : '';
             var pinIcon = j.featured ? `<svg class="gp-pin-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>` : '';
             
-            var badgeText = escapeHTML(JOB_TYPES[j.job_type_id] || j.job_type || 'Full Time');
-            var safeTitle = escapeHTML(j.title);
-            var safeEmployer = escapeHTML(j.employer?.name || '');
-            var safeLocation = escapeHTML(j.location);
-            var safeLogo = escapeHTML(j.employer?.logo || '');
-            var safeCategory = escapeHTML(j.category?.name || '');
+            // Clean HTML entities first, then escape them safely
+            var rawTitle = decodeHTMLEntities(j.title);
+            var safeTitle = escapeHTML(rawTitle);
             
-            // Build Snippet text (truncate at 140 chars)
-            var snippetText = stripHTML(j.description);
+            var badgeText = escapeHTML(JOB_TYPES[j.job_type_id] || j.job_type || 'Full Time');
+            var compText = formatComp(j);
+            var safeEmployer = escapeHTML(decodeHTMLEntities(j.employer?.name || ''));
+            var safeLocation = escapeHTML(decodeHTMLEntities(j.location));
+            var safeLogo = escapeHTML(j.employer?.logo || '');
+            var safeCategory = escapeHTML(decodeHTMLEntities(j.category?.name || ''));
+            
+            // Snippet text (truncate at 140 chars)
+            var snippetText = stripHTML(decodeHTMLEntities(j.description));
             if(snippetText.length > 140) snippetText = snippetText.substring(0, 140) + '...';
 
-            // Build Tags (Category + up to 2 perks)
+            // Tags
             var tagsHtml = '';
             if (safeCategory) tagsHtml += `<span class="gp-job-tag">${safeCategory}</span>`;
             
             var perks = j.custom_fields?.["146383"]?.selected_options || [];
-            perks.slice(0, 2).forEach(p => { tagsHtml += `<span class="gp-job-tag">${escapeHTML(p.option)}</span>`; });
+            perks.slice(0, 2).forEach(p => { tagsHtml += `<span class="gp-job-tag">${escapeHTML(decodeHTMLEntities(p.option))}</span>`; });
             var tagsContainer = tagsHtml ? `<div class="gp-job-tags">${tagsHtml}</div>` : '';
 
             return `<div class="gp-job-card ${isFeatured}" data-id="${j.id}">
@@ -235,6 +281,7 @@
                         <span>${badgeText}</span>
                         <span class="gp-meta-divider">•</span>
                         <span>${safeLocation}</span>
+                        ${compText ? `<span class="gp-meta-divider">•</span> ${compText}` : ''}
                     </div>
                     
                     ${tagsContainer}
@@ -281,20 +328,21 @@
         if (card) {
             var job = allJobs.find(function(j) { return j.id == card.dataset.id; });
             if (job) {
-                var safeTitle = escapeHTML(job.title);
-                var safeEmployer = escapeHTML(job.employer?.name || '');
-                var safeCategory = escapeHTML(job.category?.name || '');
-                var safeLocation = escapeHTML(job.location);
+                // Decode & Escape cleanly
+                var safeTitle = escapeHTML(decodeHTMLEntities(job.title));
+                var safeEmployer = escapeHTML(decodeHTMLEntities(job.employer?.name || ''));
+                var safeCategory = escapeHTML(decodeHTMLEntities(job.category?.name || ''));
+                var safeLocation = escapeHTML(decodeHTMLEntities(job.location));
                 var badgeText = escapeHTML(JOB_TYPES[job.job_type_id] || job.job_type || 'Full Time');
 
-                // Re-fetch tags just for the modal
                 var perks = job.custom_fields?.["146383"]?.selected_options || [];
                 var tagsHtml = '';
                 if (safeCategory) tagsHtml += `<span class="gp-job-tag">${safeCategory}</span>`;
-                perks.forEach(p => { tagsHtml += `<span class="gp-job-tag">${escapeHTML(p.option)}</span>`; });
+                perks.forEach(p => { tagsHtml += `<span class="gp-job-tag">${escapeHTML(decodeHTMLEntities(p.option))}</span>`; });
                 var tagsContainer = tagsHtml ? `<div class="gp-job-tags" style="margin-top:15px; margin-bottom:15px;">${tagsHtml}</div>` : '';
 
-                document.getElementById('gp-modal-title').innerText = safeTitle;
+                // Safely assign via innerHTML so decoded ampersands display correctly
+                document.getElementById('gp-modal-title').innerHTML = safeTitle;
                 
                 document.getElementById('gp-modal-body').innerHTML = `
                     <div style="font-size:15px; color:#4b5563; margin-bottom: 5px;">
@@ -311,17 +359,15 @@
                     <div style="margin-top:20px; color:#111827;">${job.description}</div>
                 `;
                 
-                document.getElementById('gp-modal-apply').href = escapeHTML(job.job_details_url || '#');
+                document.getElementById('gp-modal-apply').href = escapeHTML(appendUtmToUrl(job.job_details_url));
+                
                 modal.style.display = 'block';
                 document.body.style.overflow = 'hidden';
-                
-                // Accessibility: Shift focus
                 closeBtn.focus();
             }
         }
     });
 
-    // Debounced Search Input 
     document.getElementById('gp-search').addEventListener('input', debounce(function(e) {
         var term = e.target.value.toLowerCase();
         displayLimit = 15;
