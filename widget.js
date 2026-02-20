@@ -77,7 +77,7 @@
         .gp-footer img { height: 32px; display: inline-block; }
         
         /* Modal Styles */
-        .gp-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; backdrop-filter: blur(2px); }
+        .gp-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2147483647 !important; backdrop-filter: blur(2px); }
         .gp-modal-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; width: 90%; max-width: 700px; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; }
         .gp-modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: white; z-index: 2; }
         .gp-modal-scroll { padding: 25px; overflow-y: auto; line-height: 1.6; color: #333; flex-grow: 1; }
