@@ -1,5 +1,5 @@
 /* Gippslander Job Widget 
-   Hosted via jsDelivr
+   v 2.0.0
 */
 (function() {
     var config = window.GippslanderConfig || {};
