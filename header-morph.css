@@ -1,88 +1,90 @@
 /* =========================================================
-   GIPPSLANDER - REFINED FLOATING PILL (GLASS EFFECT)
+   GIPPSLANDER - HYBRID HEADER (WIDE TO GLASS PILL ON SCROLL)
    ========================================================= */
 
-/* 1. Main Floating Pill Container */
-#jb-section-4607 .fixed-top {
-    max-width: 1120px !important; /* Slightly wider to frame the content better */
-    margin: 20px auto 0 auto !important; /* Pushed down a tiny bit from the very top */
-    left: 0 !important;
-    right: 0 !important;
+/* 1. DEFAULT STATE: Wide, edge-to-edge at the top */
+header .fixed-top {
+    max-width: 100% !important;
+    margin: 0 auto !important; 
+    margin-top: 0 !important;  
+    border-radius: 0 !important; 
+    box-shadow: 0 0 0 transparent !important; 
+    border: 1px solid transparent !important;
+    border-bottom: 1px solid #E2E8F0 !important; 
+    background-color: #ffffff !important; 
+    
+    will-change: max-width, margin-top, border-radius, box-shadow, background-color, backdrop-filter;
+    transition: max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                margin-top 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-radius 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                padding 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.3s ease,
+                background-color 0.3s ease,
+                backdrop-filter 0.3s ease !important;
+}
+
+header .fixed-top #header1-navbar {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    transition: padding 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* 2. SCROLLED STATE: The refined floating glass pill */
+header .fixed-top.header-scrolled {
+    max-width: 1120px !important;
+    margin-top: 20px !important; 
     border-radius: 50px !important; 
     
-    /* Softer, wider shadow so it really "floats" */
+    /* Softer, wider shadow */
     box-shadow: 0 14px 40px -10px rgba(0, 0, 0, 0.08), 0 6px 15px -5px rgba(0, 0, 0, 0.04) !important;
     border: 1px solid rgba(226, 232, 240, 0.8) !important; 
     
-    /* THE GLASS EFFECT: More transparent white, much stronger blur */
+    /* The Glass Effect */
     background-color: rgba(255, 255, 255, 0.85) !important; 
     backdrop-filter: blur(16px) !important; 
-    -webkit-backdrop-filter: blur(16px) !important; /* Safari support */
-    
-    transition: all 0.3s ease-in-out !important;
+    -webkit-backdrop-filter: blur(16px) !important; 
 }
 
-/* 2. Push page content down so it doesn't hide behind the pill */
-body {
-    padding-top: 110px !important; /* Adjust this number if you need more/less space above "Find jobs in Gippsland" */
-}
-
-/* 3. Remove jBoard's default bottom border */
-#jb-section-4607 .jb-border-bottom-color-CBD5E1FF {
-    border-bottom: none !important;
-}
-
-/* 4. Adjust inner navbar spacing to keep it perfectly centered */
-#header1-navbar {
+/* Shrinks the inner padding slightly so the pill isn't bulky */
+header .fixed-top.header-scrolled #header1-navbar {
     padding-top: 6px !important;
     padding-bottom: 6px !important;
-    border-radius: 50px !important;
 }
 
-/* 5. Dropdown Menu Styling */
+/* 3. SPACE FIX: Push content down so it doesn't get hidden under the header */
+body {
+    padding-top: 85px !important; 
+}
+
+/* 4. DROPDOWN MENU FIXES */
 #header1-navbar .dropdown-menu {
-    border-radius: 16px !important;
+    border-radius: 12px !important;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
     border: 1px solid #E2E8F0 !important;
-    margin-top: 15px !important; /* Pushes dropdown below the pill */
+    margin-top: 15px !important; 
 }
 
-/* 6. Fix dropdown "hover gap" bug (Invisible bridge) */
+/* Invisible bridge so mouse doesn't lose hover state */
 #header1-navbar .dropdown-menu::before {
-    content: '';
-    position: absolute;
-    top: -20px; /* Pulls the bridge up to cover the gap */
-    left: 0;
-    width: 100%;
-    height: 20px;
-    background: transparent;
+    content: ''; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background: transparent;
 }
 
-/* 7. Mobile Adjustments (Keeps it floating but adapts for small screens) */
+/* 5. MOBILE ADAPTATION */
 @media (max-width: 991px) {
-    #jb-section-4607 .fixed-top {
-        margin: 10px 15px 0 15px !important; 
-        border-radius: 24px !important; /* Slightly less rounded on mobile */
+    header .fixed-top.header-scrolled {
+        margin-top: 10px !important; 
         max-width: calc(100% - 30px) !important;
+        border-radius: 24px !important; 
     }
     
-    /* Make the mobile menu dropdown look clean when opened */
     #header1-main-navbar {
         background: #fff !important;
-        border-radius: 16px !important;
+        border-radius: 12px !important;
         padding: 10px !important;
         margin-top: 15px !important;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
         border: 1px solid #E2E8F0 !important;
     }
     
-    /* Hide jBoard's default mobile menu separating lines */
-    .mobile-menu li {
-        border-bottom: 1px solid #f1f5f9 !important;
-    }
-    
-    /* Reduce body padding on mobile so it doesn't push content too far down */
-    body {
-        padding-top: 90px !important; 
-    }
+    .mobile-menu li { border-bottom: 1px solid #f1f5f9 !important; }
 }
