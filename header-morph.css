@@ -1,0 +1,70 @@
+/* =========================================================
+   GIPPSLANDER - HYBRID HEADER (WIDE TO PILL ON SCROLL)
+   ========================================================= */
+
+header .fixed-top {
+    max-width: 100% !important;
+    margin: 0 auto !important; 
+    margin-top: 0 !important;  
+    border-radius: 0 !important; 
+    box-shadow: 0 0 0 transparent !important; 
+    border: 1px solid transparent !important;
+    border-bottom: 1px solid #E2E8F0 !important; 
+    background-color: #ffffff !important; 
+    will-change: max-width, margin-top, border-radius, box-shadow;
+    transition: max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                margin-top 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-radius 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                padding 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.3s ease,
+                background-color 0.3s ease !important;
+}
+
+header .fixed-top #header1-navbar {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    transition: padding 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+header .fixed-top.header-scrolled {
+    max-width: 1100px !important;
+    margin-top: 16px !important; 
+    border-radius: 50px !important; 
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid #E2E8F0 !important;
+    background-color: rgba(255, 255, 255, 0.95) !important; 
+    backdrop-filter: blur(10px) !important; 
+}
+
+header .fixed-top.header-scrolled #header1-navbar {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+}
+
+#header1-navbar .dropdown-menu {
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #E2E8F0 !important;
+    margin-top: 12px !important; 
+}
+
+#header1-navbar .dropdown-menu::before {
+    content: ''; position: absolute; top: -15px; left: 0; width: 100%; height: 15px; background: transparent;
+}
+
+@media (max-width: 991px) {
+    header .fixed-top.header-scrolled {
+        margin-top: 10px !important; 
+        max-width: calc(100% - 30px) !important;
+        border-radius: 24px !important; 
+    }
+    #header1-main-navbar {
+        background: #fff !important;
+        border-radius: 12px !important;
+        padding: 10px !important;
+        margin-top: 15px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid #E2E8F0 !important;
+    }
+    .mobile-menu li { border-bottom: 1px solid #f1f5f9 !important; }
+}
