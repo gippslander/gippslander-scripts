@@ -65,9 +65,10 @@
     .sector-card:hover { border-color: #4CAF50; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
     /* ICONS & LOGOS */
-    .card-icon-bubble { width: 42px; height: 42px; background: #f0fdf4; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #166534; flex-shrink: 0; overflow: hidden; }
-    .card-icon-bubble svg { width: 22px; height: 22px; fill: currentColor; }
+    .card-icon-bubble { width: 42px; height: 42px; background: #E8F5E9; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4CAF50; flex-shrink: 0; overflow: hidden; transition: background 0.2s, color 0.2s; }
+    .card-icon-bubble svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .card-icon-bubble img { width: 100%; height: 100%; object-fit: contain; }
+    .sector-card:hover .card-icon-bubble { background: #4CAF50; color: white; }
 
     /* PINNED STATE STYLE (Yellow/Gold) */
     .card-icon-bubble.pinned {
