@@ -1,5 +1,5 @@
 (function() {
-    var FAQ_URL = 'https://cdn.jsdelivr.net/gh/gippslander/assets@main/faq.json';
+    var FAQ_URL = 'https://cdn.jsdelivr.net/gh/gippslander/assets@main/faq.json?v=2';
     var container = document.getElementById('faqList');
  
     if (!container) return;
